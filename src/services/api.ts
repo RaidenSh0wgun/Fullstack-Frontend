@@ -1,4 +1,5 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { useAxios } from 'axios-hooks';
 
 const API_BASE_URL = 'http://localhost:8000/api/';
 
@@ -9,26 +10,29 @@ interface Item {
 }
 
 export const useGetItems = () => {
-  return useQuery<Item[]>({
-    queryKey: ['items'],
-    queryFn: async () => {
-      const response = await fetch(`${API_BASE_URL}items/`);
-      if (!response.ok) throw new Error('Failed to fetch items');
-      return response.json();
-    },
-  });
+  const [{ data, loading, error }] = useAxios<Item[]>(`${API_BASE_URL}items/`);
+
+  return {
+    data: data || [],
+    isLoading: loading,
+    error: error ? new Error(error.message) : null,
+  };
 };
 
 export const useCreateItem = () => {
+  const [, executePost] = useAxios<Item>(
+    {
+      url: `${API_BASE_URL}items/`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    },
+    { manual: true }
+  );
+
   return useMutation({
     mutationFn: async (data: { name: string; description: string }) => {
-      const response = await fetch(`${API_BASE_URL}items/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Failed to create item');
-      return response.json();
+      const response = await executePost({ data });
+      return response.data;
     },
   });
 };

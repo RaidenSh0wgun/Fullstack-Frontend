@@ -1,60 +1,319 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
-interface ActivityData {
-    id: number;
-    title: string;
-    description: string;
-    created_at: string;
-}
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  createCourse,
+  createQuiz,
+  deleteCourse,
+  deleteQuiz,
+  fetchQuizzesForCourse,
+  fetchTeacherCourses,
+  type Course,
+  type Quiz,
+} from "@/services/api";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export default function Homepage() {
-    const [activities, setActivities] = useState<ActivityData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-    useEffect(() => {
-        fetchActivities();
-    }, []);
+  if (!user) return null;
 
-    const fetchActivities = async () => {
-        try {
-            const response = await axios.get('http://localhost:8000/api/activities/');
-            setActivities(response.data);
-            setError(null);
-        } catch (err) {
-            setError('Failed to fetch activities');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+  if (user.role === "teacher") {
+    return <TeacherDashboard />;
+  }
 
-    if (loading) return <div className="p-8">Loading...</div>;
+  return <StudentDashboard />;
+}
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            <header className="bg-white shadow">
-                <div className="max-w-7xl mx-auto px-4 py-6">
-                    <h1 className="text-3xl font-bold text-gray-900">OQES Activities</h1>
-                </div>
-            </header>
+function TeacherDashboard() {
+  const queryClient = useQueryClient();
+  const { data: courses } = useQuery({
+    queryKey: ["courses"],
+    queryFn: fetchTeacherCourses,
+  });
 
-            <main className="max-w-7xl mx-auto px-4 py-8">
-                {error && <div className="text-red-600 mb-4">{error}</div>}
-                
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {activities.map((activity) => (
-                        <div key={activity.id} className="bg-white rounded-lg shadow p-6">
-                            <h2 className="text-xl font-semibold mb-2">{activity.title}</h2>
-                            <p className="text-gray-600 mb-4">{activity.description}</p>
-                            <p className="text-sm text-gray-400">
-                                {new Date(activity.created_at).toLocaleDateString()}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </main>
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+
+  const {
+    data: quizzes,
+    isLoading: quizzesLoading,
+  } = useQuery({
+    queryKey: ["quizzes", selectedCourseId],
+    queryFn: () => fetchQuizzesForCourse(selectedCourseId as number),
+    enabled: selectedCourseId !== null,
+  });
+
+  const createCourseMutation = useMutation({
+    mutationFn: createCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+
+  const deleteCourseMutation = useMutation({
+    mutationFn: deleteCourse,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      setSelectedCourseId(null);
+    },
+  });
+
+  const createQuizMutation = useMutation({
+    mutationFn: createQuiz,
+    onSuccess: () => {
+      if (selectedCourseId) {
+        queryClient.invalidateQueries({
+          queryKey: ["quizzes", selectedCourseId],
+        });
+      }
+    },
+  });
+
+  const deleteQuizMutation = useMutation({
+    mutationFn: deleteQuiz,
+    onSuccess: () => {
+      if (selectedCourseId) {
+        queryClient.invalidateQueries({
+          queryKey: ["quizzes", selectedCourseId],
+        });
+      }
+    },
+  });
+
+  const handleCreateCourse = async () => {
+    const title = prompt("Course title:");
+    if (!title) return;
+    const description = prompt("Course description (optional):") ?? "";
+    await createCourseMutation.mutateAsync({ title, description });
+  };
+
+  const handleDeleteCourse = async (course: Course) => {
+    if (!confirm(`Delete course "${course.title}" and its quizzes?`)) return;
+    await deleteCourseMutation.mutateAsync(course.id);
+  };
+
+  const handleCreateQuiz = async () => {
+    if (!selectedCourseId) {
+      alert("Select a course first.");
+      return;
+    }
+    const title = prompt("Quiz title:");
+    if (!title) return;
+    const description = prompt("Quiz description (optional):") ?? "";
+    const durationStr = prompt("Duration in minutes (e.g. 10):", "10");
+    const duration = durationStr ? Number(durationStr) : 10;
+    await createQuizMutation.mutateAsync({
+      title,
+      description,
+      duration_minutes: duration,
+      course: selectedCourseId,
+      id: 0, // will be ignored by backend if using serializer defaults
+    } as Quiz);
+  };
+
+  const handleDeleteQuiz = async (quiz: Quiz) => {
+    if (!confirm(`Delete quiz "${quiz.title}"?`)) return;
+    await deleteQuizMutation.mutateAsync(quiz.id);
+  };
+
+  return (
+    <div className="grid gap-6 md:grid-cols-[1.2fr,1.5fr]">
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">Your courses</h2>
+          <Button
+            size="sm"
+            onClick={handleCreateCourse}
+            disabled={createCourseMutation.isPending}
+          >
+            {createCourseMutation.isPending ? "Creating..." : "New course"}
+          </Button>
         </div>
-    );
+        <div className="space-y-2">
+          {courses?.length ? (
+            courses.map((course) => (
+              <button
+                key={course.id}
+                type="button"
+                onClick={() => setSelectedCourseId(course.id)}
+                className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition ${
+                  selectedCourseId === course.id
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:bg-muted"
+                }`}
+              >
+                <div>
+                  <p className="font-medium">{course.title}</p>
+                  {course.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {course.description}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  size="icon-xs"
+                  variant="ghost"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteCourse(course);
+                  }}
+                >
+                  ✕
+                </Button>
+              </button>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              You have no courses yet. Create one to start adding quizzes.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">Quizzes</h2>
+          <Button
+            size="sm"
+            onClick={handleCreateQuiz}
+            disabled={!selectedCourseId || createQuizMutation.isPending}
+          >
+            {createQuizMutation.isPending ? "Creating..." : "New quiz"}
+          </Button>
+        </div>
+        {!selectedCourseId ? (
+          <p className="text-sm text-muted-foreground">
+            Select a course to see and manage its quizzes.
+          </p>
+        ) : quizzesLoading ? (
+          <p className="text-sm text-muted-foreground">Loading quizzes...</p>
+        ) : quizzes?.length ? (
+          <div className="space-y-2">
+            {quizzes.map((quiz) => (
+              <div
+                key={quiz.id}
+                className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              >
+                <div>
+                  <p className="font-medium">{quiz.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {quiz.description} • {quiz.duration_minutes} min
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* If you add a question editor later, you can link to it here */}
+                  <Button
+                    size="icon-xs"
+                    variant="ghost"
+                    type="button"
+                    onClick={() => handleDeleteQuiz(quiz)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No quizzes for this course yet. Create one above.
+          </p>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function StudentDashboard() {
+  // In a real app you'd probably have an endpoint that gives
+  // all available quizzes for the current student. Here we'll
+  // just reuse courses/quizzes and let the backend filter.
+  const { data: courses } = useQuery({
+    queryKey: ["courses"],
+    queryFn: fetchTeacherCourses,
+  });
+
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+
+  const {
+    data: quizzes,
+    isLoading: quizzesLoading,
+  } = useQuery({
+    queryKey: ["quizzes", selectedCourseId],
+    queryFn: () => fetchQuizzesForCourse(selectedCourseId as number),
+    enabled: selectedCourseId !== null,
+  });
+
+  return (
+    <div className="grid gap-6 md:grid-cols-[1.2fr,1.5fr]">
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Available courses</h2>
+        <div className="space-y-2">
+          {courses?.length ? (
+            courses.map((course) => (
+              <button
+                key={course.id}
+                type="button"
+                onClick={() => setSelectedCourseId(course.id)}
+                className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition ${
+                  selectedCourseId === course.id
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:bg-muted"
+                }`}
+              >
+                <div>
+                  <p className="font-medium">{course.title}</p>
+                  {course.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {course.description}
+                    </p>
+                  )}
+                </div>
+              </button>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No courses available yet.
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Quizzes</h2>
+        {!selectedCourseId ? (
+          <p className="text-sm text-muted-foreground">
+            Select a course to see quizzes you can take.
+          </p>
+        ) : quizzesLoading ? (
+          <p className="text-sm text-muted-foreground">Loading quizzes...</p>
+        ) : quizzes?.length ? (
+          <div className="space-y-2">
+            {quizzes.map((quiz) => (
+              <div
+                key={quiz.id}
+                className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
+              >
+                <div>
+                  <p className="font-medium">{quiz.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {quiz.description} • {quiz.duration_minutes} min
+                  </p>
+                </div>
+                <Link to={`/quiz/${quiz.id}`}>
+                  <Button size="sm">Take quiz</Button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No quizzes for this course yet.
+          </p>
+        )}
+      </section>
+    </div>
+  );
 }

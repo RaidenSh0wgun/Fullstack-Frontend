@@ -3,7 +3,6 @@ import axios from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000/api";
 
-// ---- Types ----
 
 export type Role = "student" | "teacher";
 
@@ -22,7 +21,6 @@ export interface AuthTokens {
 export interface LoginPayload {
   username: string;
   password: string;
-  role: Role;
 }
 
 export interface RegisterPayload {
@@ -56,7 +54,6 @@ export interface QuizDetail extends Quiz {
   questions: Question[];
 }
 
-// ---- Storage helpers ----
 
 const ACCESS_KEY = "quiz_app_access";
 const REFRESH_KEY = "quiz_app_refresh";
@@ -78,7 +75,7 @@ export function clearStoredAuth() {
   localStorage.removeItem(REFRESH_KEY);
 }
 
-// ---- Axios instance ----
+
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -87,25 +84,19 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const access = localStorage.getItem(ACCESS_KEY);
   if (access) {
-    config.headers = {
-      ...config.headers,
-      Authorization: `Bearer ${access}`,
-    };
+    config.headers = config.headers ?? {};
+    (config.headers as any).Authorization = `Bearer ${access}`;
   }
   return config;
 });
 
-// ---- Auth endpoints (adjust URLs to match your backend) ----
 
 export async function loginRequest(
   payload: LoginPayload
 ): Promise<AuthTokens> {
-  // Default SimpleJWT login endpoint
   const { data } = await api.post<AuthTokens>("/token/", {
     username: payload.username,
     password: payload.password,
-    // Send role if your backend expects it; otherwise it will be ignored.
-    role: payload.role,
   });
   return data;
 }
@@ -113,17 +104,16 @@ export async function loginRequest(
 export async function registerRequest(
   payload: RegisterPayload
 ): Promise<AuthTokens> {
-  // Adjust to your actual registration endpoint/response shape.
-  const { data } = await api.post<AuthTokens | AuthTokens & { user: User }>(
-    "/register/",
-    payload
-  );
-
-  // If your endpoint returns { access, refresh, user }, you can adapt here.
-  return {
-    access: (data as AuthTokens).access,
-    refresh: (data as AuthTokens).refresh,
+  const requestData = {
+    username: payload.username,
+    email: payload.email,
+    password1: payload.password,
+    password2: payload.password,
+    role: payload.role,
   };
+
+  const { data } = await api.post<AuthTokens>("/register/", requestData);
+  return data;
 }
 
 export async function fetchCurrentUser(accessToken?: string): Promise<User> {
@@ -137,7 +127,6 @@ export async function fetchCurrentUser(accessToken?: string): Promise<User> {
   return data;
 }
 
-// ---- Teacher endpoints ----
 
 export async function fetchTeacherCourses(): Promise<Course[]> {
   const { data } = await api.get<Course[]>("/courses/");
@@ -189,7 +178,6 @@ export async function deleteQuiz(id: number): Promise<void> {
   await api.delete(`/quizzes/${id}/`);
 }
 
-// ---- Student quiz taking ----
 
 export async function fetchQuizDetail(id: number): Promise<QuizDetail> {
   const { data } = await api.get<QuizDetail>(`/quizzes/${id}/`);

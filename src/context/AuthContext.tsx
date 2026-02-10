@@ -66,12 +66,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (payload: RegisterPayload) => {
     const auth = await registerRequest(payload);
-    // assume backend returns tokens on register; if not, adjust:
-    if (auth?.access && auth?.refresh) {
+    if (!auth?.access || !auth?.refresh) {
+      throw new Error("Registration did not return valid tokens.");
+    }
+
+    try {
+      const u = await fetchCurrentUser(auth.access);
       storeAuth(auth);
       setAccessToken(auth.access);
-      const u = await fetchCurrentUser(auth.access);
       setUser(u);
+    } catch (err) {
+      clearStoredAuth();
+      setUser(null);
+      setAccessToken(null);
+      throw err;
     }
   }, []);
 

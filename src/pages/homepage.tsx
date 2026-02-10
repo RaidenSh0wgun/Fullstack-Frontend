@@ -108,7 +108,7 @@ function TeacherDashboard() {
       description,
       duration_minutes: duration,
       course: selectedCourseId,
-      id: 0, // will be ignored by backend if using serializer defaults
+      id: 0,
     } as Quiz);
   };
 
@@ -203,7 +203,6 @@ function TeacherDashboard() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* If you add a question editor later, you can link to it here */}
                   <Button
                     size="icon-xs"
                     variant="ghost"
@@ -227,9 +226,6 @@ function TeacherDashboard() {
 }
 
 function StudentDashboard() {
-  // In a real app you'd probably have an endpoint that gives
-  // all available quizzes for the current student. Here we'll
-  // just reuse courses/quizzes and let the backend filter.
   const { data: courses } = useQuery({
     queryKey: ["courses"],
     queryFn: fetchTeacherCourses,

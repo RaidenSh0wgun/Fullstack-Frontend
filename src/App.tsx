@@ -51,7 +51,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             <span className="text-lg font-semibold">Quiz App</span>
           </Link>
           <nav className="flex items-center gap-3">
-            {user ? (
+            {user && (
               <>
                 <span className="text-sm text-muted-foreground">
                   {user.username} ({user.role})
@@ -64,12 +64,6 @@ function Layout({ children }: { children: React.ReactNode }) {
                 >
                   Logout
                 </Button>
-              </>
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button size="sm">Login / Register</Button>
-                </Link>
               </>
             )}
           </nav>

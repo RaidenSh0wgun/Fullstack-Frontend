@@ -6,6 +6,8 @@ const API_BASE_URL =
 
 export type Role = "student" | "teacher";
 
+export type QuestionType = "identification" | "mcq" | "tf";
+
 export interface User {
   id: number;
   username: string;
@@ -34,6 +36,7 @@ export interface Course {
   id: number;
   title: string;
   description?: string;
+  is_enrolled?: boolean;
 }
 
 export interface Quiz {
@@ -42,16 +45,45 @@ export interface Quiz {
   course: number;
   description?: string;
   duration_minutes: number;
+  has_attempted?: boolean;
+}
+
+export interface QuestionChoice {
+  id: number;
+  text: string;
 }
 
 export interface Question {
   id: number;
   text: string;
-  choices: { id: number; text: string }[];
+  question_type: QuestionType;
+  correct_text?: string;
+  choices: QuestionChoice[];
 }
 
 export interface QuizDetail extends Quiz {
   questions: Question[];
+  has_attempted?: boolean;
+}
+
+export interface QuizChoicePayload {
+  text: string;
+  is_correct?: boolean;
+}
+
+export interface QuizQuestionPayload {
+  text: string;
+  question_type: QuestionType;
+  correct_text?: string;
+  choices: QuizChoicePayload[];
+}
+
+export interface QuizCreatePayload {
+  title: string;
+  description?: string;
+  duration_minutes: number;
+  course: number;
+  questions?: QuizQuestionPayload[];
 }
 
 
@@ -152,6 +184,16 @@ export async function deleteCourse(id: number): Promise<void> {
   await api.delete(`/courses/${id}/`);
 }
 
+export async function enrollCourse(id: number): Promise<Course> {
+  const { data } = await api.post<Course>(`/courses/${id}/enroll/`);
+  return data;
+}
+
+export async function unenrollCourse(id: number): Promise<Course> {
+  const { data } = await api.delete<Course>(`/courses/${id}/enroll/`);
+  return data;
+}
+
 export async function fetchQuizzesForCourse(
   courseId: number
 ): Promise<Quiz[]> {
@@ -160,7 +202,7 @@ export async function fetchQuizzesForCourse(
 }
 
 export async function createQuiz(
-  payload: Omit<Quiz, "id">
+  payload: QuizCreatePayload
 ): Promise<Quiz> {
   const { data } = await api.post<Quiz>("/quizzes/", payload);
   return data;

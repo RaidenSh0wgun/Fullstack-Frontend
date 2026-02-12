@@ -102,7 +102,6 @@ function TeacherDashboard() {
   const saveQuizMutation = useMutation({
     mutationFn: async (payload: QuizCreatePayload) => {
       if (editingQuizId) {
-        // For updates, send full payload to the update endpoint.
         return await updateQuiz(editingQuizId, payload);
       }
       return await createQuiz(payload);
@@ -157,7 +156,6 @@ function TeacherDashboard() {
       alert("Select a course first.");
       return;
     }
-    // Reset state for a fresh create.
     setEditingQuizId(null);
     setQuizTitle("");
     setQuizDescription("");
@@ -184,8 +182,6 @@ function TeacherDashboard() {
           correct_text: q.correct_text,
           choices: q.choices,
         };
-
-        // For true/false, normalize choices to "True" / "False" automatically.
         if (q.question_type === "tf") {
           const correctIsTrue = (q.correct_text || "").toLowerCase() === "true";
           base.correct_text = correctIsTrue ? "True" : "False";
@@ -194,8 +190,6 @@ function TeacherDashboard() {
             { text: "False", is_correct: !correctIsTrue },
           ];
         }
-
-        // For identification, we don't need choices; only correct_text.
         if (q.question_type === "identification") {
           base.choices = [];
         }
@@ -703,7 +697,6 @@ function TeacherDashboard() {
                     variant="outline"
                     type="button"
                     onClick={async () => {
-                      // Load full quiz details (including questions) for editing.
                       try {
                         const full = await fetchQuizDetail(quiz.id);
                         setEditingQuizId(full.id);
@@ -717,8 +710,6 @@ function TeacherDashboard() {
                             correct_text: q.correct_text,
                             choices: q.choices.map((c) => ({
                               text: c.text,
-                              // We don't get is_correct on read; default to false,
-                              // teacher can re-mark the correct answer if needed.
                               is_correct: false,
                             })),
                           }))

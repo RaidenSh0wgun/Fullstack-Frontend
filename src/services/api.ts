@@ -272,13 +272,12 @@ export async function fetchMyEvents(): Promise<CalendarEvent[]> {
   return data;
 }
 
-// Pending quizzes (student)
+
 export async function fetchPendingQuizzes(): Promise<Quiz[]> {
   const { data } = await api.get<Quiz[]>("/quizzes/pending/");
   return data;
 }
 
-// Enrolled students (instructor)
 export interface EnrolledStudent {
   id: number;
   user: number;
@@ -292,7 +291,6 @@ export async function fetchCourseStudents(courseId: number): Promise<EnrolledStu
   return data;
 }
 
-// Quiz attempts/scores (instructor)
 export interface QuizAttempt {
   id: number;
   student: number;

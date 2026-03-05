@@ -255,7 +255,6 @@ export async function submitQuizAnswers(
   return data;
 }
 
-// Calendar events
 export interface CalendarEvent {
   id: number;
   title: string;
@@ -272,13 +271,11 @@ export async function fetchMyEvents(): Promise<CalendarEvent[]> {
   return data;
 }
 
-// Pending quizzes (student)
 export async function fetchPendingQuizzes(): Promise<Quiz[]> {
   const { data } = await api.get<Quiz[]>("/quizzes/pending/");
   return data;
 }
 
-// Enrolled students (instructor)
 export interface EnrolledStudent {
   id: number;
   user: number;
@@ -292,7 +289,6 @@ export async function fetchCourseStudents(courseId: number): Promise<EnrolledStu
   return data;
 }
 
-// Quiz attempts/scores (instructor)
 export interface QuizAttempt {
   id: number;
   student: number;
@@ -308,14 +304,12 @@ export async function fetchQuizAttempts(quizId: number): Promise<QuizAttempt[]> 
   return data;
 }
 
-// Student: courses they can enroll in (for dropdown / list)
-/** For teacher: their courses. For student: use fetchEnrolledCourses for "my courses" or fetchCourses() for all. */
+
 export async function fetchEnrolledCourses(): Promise<Course[]> {
   const { data } = await api.get<Course[]>("/courses/enrolled/");
   return data;
 }
 
-/** All courses (student sees all to enroll; teacher sees their own via fetchTeacherCourses). */
 export async function fetchCourses(): Promise<Course[]> {
   const { data } = await api.get<Course[]>("/courses/");
   return data;

@@ -101,6 +101,11 @@ export default function QuizPage() {
               {quiz.description}
             </p>
           )}
+          {quiz.due_date && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Deadline: {new Date(quiz.due_date).toLocaleString()}
+            </p>
+          )}
         </div>
         <div className="rounded-lg border border-border bg-card px-4 py-2 text-center">
           <p className="text-xs font-medium text-muted-foreground">Time left</p>

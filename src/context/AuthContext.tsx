@@ -5,8 +5,8 @@ import {
   useEffect,
   useMemo,
   useState,
-  ReactNode,
 } from "react";
+import type { ReactNode } from "react";
 import {
   loginRequest,
   registerRequest,

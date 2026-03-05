@@ -37,6 +37,10 @@ export interface Course {
   title: string;
   description?: string;
   is_enrolled?: boolean;
+  author?: number;
+  author_name?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Quiz {
@@ -45,6 +49,7 @@ export interface Quiz {
   course: number;
   description?: string;
   duration_minutes: number;
+  due_date?: string | null;
   has_attempted?: boolean;
 }
 
@@ -83,6 +88,7 @@ export interface QuizCreatePayload {
   description?: string;
   duration_minutes: number;
   course: number;
+  due_date?: string | null;
   questions?: QuizQuestionPayload[];
 }
 
@@ -226,14 +232,97 @@ export async function fetchQuizDetail(id: number): Promise<QuizDetail> {
   return data;
 }
 
+export async function createQuestion(
+  quizId: number,
+  payload: QuizQuestionPayload
+): Promise<unknown> {
+  const { data } = await api.post(`/quizzes/${quizId}/questions/`, payload);
+  return data;
+}
+
+export async function deleteQuestion(questionId: number): Promise<void> {
+  await api.delete(`/questions/${questionId}/`);
+}
+
 export async function submitQuizAnswers(
   quizId: number,
   answers: Record<number, number>
-): Promise<{ score: number }> {
-  const { data } = await api.post<{ score: number }>(
+): Promise<{ score: number; total: number }> {
+  const { data } = await api.post<{ score: number; total: number }>(
     `/quizzes/${quizId}/submit/`,
     { answers }
   );
+  return data;
+}
+
+// Calendar events
+export interface CalendarEvent {
+  id: number;
+  title: string;
+  description?: string;
+  start: string;
+  end: string | null;
+  event_type: string;
+  related_course: number | null;
+  related_quiz: number | null;
+}
+
+export async function fetchMyEvents(): Promise<CalendarEvent[]> {
+  const { data } = await api.get<CalendarEvent[]>("/events/");
+  return data;
+}
+
+// Pending quizzes (student)
+export async function fetchPendingQuizzes(): Promise<Quiz[]> {
+  const { data } = await api.get<Quiz[]>("/quizzes/pending/");
+  return data;
+}
+
+// Enrolled students (instructor)
+export interface EnrolledStudent {
+  id: number;
+  user: number;
+  username: string;
+  full_name: string;
+  student_id: string;
+}
+
+export async function fetchCourseStudents(courseId: number): Promise<EnrolledStudent[]> {
+  const { data } = await api.get<EnrolledStudent[]>(`/courses/${courseId}/students/`);
+  return data;
+}
+
+// Quiz attempts/scores (instructor)
+export interface QuizAttempt {
+  id: number;
+  student: number;
+  student_name: string;
+  username: string;
+  score: number;
+  total: number;
+  created_at: string;
+}
+
+export async function fetchQuizAttempts(quizId: number): Promise<QuizAttempt[]> {
+  const { data } = await api.get<QuizAttempt[]>(`/quizzes/${quizId}/attempts/`);
+  return data;
+}
+
+// Student: courses they can enroll in (for dropdown / list)
+/** For teacher: their courses. For student: use fetchEnrolledCourses for "my courses" or fetchCourses() for all. */
+export async function fetchEnrolledCourses(): Promise<Course[]> {
+  const { data } = await api.get<Course[]>("/courses/enrolled/");
+  return data;
+}
+
+/** All courses (student sees all to enroll; teacher sees their own via fetchTeacherCourses). */
+export async function fetchCourses(): Promise<Course[]> {
+  const { data } = await api.get<Course[]>("/courses/");
+  return data;
+}
+
+export async function fetchCourseDetail(id: number): Promise<Course> {
+  const { data } = await api.get<Course>(`/courses/${id}/detail/`);
   return data;
 }
 

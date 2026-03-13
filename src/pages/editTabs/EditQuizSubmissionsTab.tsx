@@ -61,7 +61,7 @@ export default function EditQuizSubmissionsTab() {
                       {new Date(a.created_at).toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link to={`/courses/${cid}/quizzes/${qid}/edit/submissions/${a.id}`}>
+                      <Link to={`/courses/${cid}/quizzes/${qid}/edit/review/${a.id}`}>
                         <Button size="sm" variant="outline">
                           Review
                         </Button>

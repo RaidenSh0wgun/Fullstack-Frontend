@@ -37,13 +37,13 @@ export default function EditQuizReviewAttemptPage() {
   const aid = attemptId ? parseInt(attemptId, 10) : NaN;
   const queryClient = useQueryClient();
 
-  const { data: quiz, isLoading: quizLoading } = useQuery({
+  const { data: quiz, isLoading: quizLoading, error: quizError } = useQuery({
     queryKey: ["quiz", qid],
     queryFn: () => fetchQuizDetail(qid),
     enabled: Number.isInteger(qid),
   });
 
-  const { data: attempt, isLoading: attemptLoading } = useQuery({
+  const { data: attempt, isLoading: attemptLoading, error: attemptError } = useQuery({
     queryKey: ["quiz-attempt", qid, aid],
     queryFn: () => fetchQuizAttemptDetail(qid, aid),
     enabled: Number.isInteger(qid) && Number.isInteger(aid),
@@ -80,8 +80,18 @@ export default function EditQuizReviewAttemptPage() {
     return <p className="text-sm text-muted-foreground">Invalid submission.</p>;
   }
 
-  if (quizLoading || attemptLoading || !quiz || !attempt) {
+  if (quizError || attemptError) {
+    console.error("Quiz error:", quizError);
+    console.error("Attempt error:", attemptError);
+    return <p className="text-sm text-muted-foreground">Failed to load review. Check console for details.</p>;
+  }
+
+  if (quizLoading || attemptLoading) {
     return <p className="text-sm text-muted-foreground">Loading review...</p>;
+  }
+
+  if (!quiz || !attempt) {
+    return <p className="text-sm text-muted-foreground">Quiz or submission not found.</p>;
   }
 
   const effectiveScore = attempt.effective_score ?? attempt.score;

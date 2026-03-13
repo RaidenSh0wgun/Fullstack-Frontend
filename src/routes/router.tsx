@@ -57,6 +57,7 @@ export default function AppRouter() {
           }
         >
           <Route index element={<EditQuizQuestionsTab />} />
+          <Route path="questions" element={<EditQuizQuestionsTab />} />
           <Route path="submissions" element={<EditQuizSubmissionsTab />} />
           <Route path="settings" element={<EditQuizSettingsTab />} />
           <Route path="review/:attemptId" element={<EditQuizReviewAttemptPage />} />

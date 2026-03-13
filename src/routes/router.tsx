@@ -11,6 +11,11 @@ import StudentsPage from "@/pages/students/StudentsPage";
 import ScoresPage from "@/pages/scores/ScoresPage";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
+import EditQuizLayout from "@/pages/editTabs/EditQuizLayout";
+import EditQuizQuestionsTab from "@/pages/editTabs/EditQuizQuestionsTab";
+import EditQuizSubmissionsTab from "@/pages/editTabs/EditQuizSubmissionsTab";
+import EditQuizSettingsTab from "@/pages/editTabs/EditQuizSettingsTab";
+import EditQuizReviewAttemptPage from "@/pages/editTabs/EditQuizReviewAttemptPage";
 
 export default function AppRouter() {
   return (
@@ -42,6 +47,20 @@ export default function AppRouter() {
           path="courses/:courseId/quizzes/:quizId/questions"
           element={<AddQuestionsPage />}
         />
+
+        <Route
+          path="courses/:courseId/quizzes/:quizId/edit"
+          element={
+            <ProtectedRoute allowedRoles={["teacher"]}>
+              <EditQuizLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<EditQuizQuestionsTab />} />
+          <Route path="submissions" element={<EditQuizSubmissionsTab />} />
+          <Route path="settings" element={<EditQuizSettingsTab />} />
+          <Route path="review/:attemptId" element={<EditQuizReviewAttemptPage />} />
+        </Route>
 
         <Route path="calendar" element={<CalendarPage />} />
 

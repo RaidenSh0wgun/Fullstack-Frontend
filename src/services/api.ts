@@ -48,6 +48,7 @@ export interface Quiz {
   course: number;
   description?: string;
   duration_minutes: number;
+  is_active?: boolean;
   due_date?: string | null;
   has_attempted?: boolean;
 }
@@ -243,6 +244,17 @@ export async function deleteQuestion(questionId: number): Promise<void> {
   await api.delete(`/questions/${questionId}/`);
 }
 
+export async function updateQuestion(
+  questionId: number,
+  payload: Partial<QuizQuestionPayload>
+): Promise<Question> {
+  const { data } = await api.patch<{ message: string; data: Question }>(
+    `/questions/${questionId}/`,
+    payload
+  );
+  return data.data;
+}
+
 export async function submitQuizAnswers(
   quizId: number,
   answers: Record<number, number>
@@ -296,12 +308,39 @@ export interface QuizAttempt {
   student_name: string;
   username: string;
   score: number;
+  score_override?: number | null;
+  effective_score?: number;
   total: number;
+  answers?: Record<string, number>;
   created_at: string;
+  edited_at?: string | null;
+  edited_by?: number | null;
 }
 
 export async function fetchQuizAttempts(quizId: number): Promise<QuizAttempt[]> {
   const { data } = await api.get<QuizAttempt[]>(`/quizzes/${quizId}/attempts/`);
+  return data;
+}
+
+export async function fetchQuizAttemptDetail(
+  quizId: number,
+  attemptId: number
+): Promise<QuizAttempt> {
+  const { data } = await api.get<QuizAttempt>(
+    `/quizzes/${quizId}/attempts/${attemptId}/`
+  );
+  return data;
+}
+
+export async function updateQuizAttempt(
+  quizId: number,
+  attemptId: number,
+  payload: Partial<Pick<QuizAttempt, "answers" | "score_override">>
+): Promise<QuizAttempt> {
+  const { data } = await api.patch<QuizAttempt>(
+    `/quizzes/${quizId}/attempts/${attemptId}/`,
+    payload
+  );
   return data;
 }
 

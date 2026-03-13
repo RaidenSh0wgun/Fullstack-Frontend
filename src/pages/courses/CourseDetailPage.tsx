@@ -283,6 +283,9 @@ function QuizRow({
       <div className="flex items-center gap-2">
         {isTeacher ? (
           <>
+          <Link to={`/courses/${courseId}/quizzes/${quiz.id}/edit`}>
+              <Button size="sm">Edit quiz</Button>
+            </Link>
             <Link to={`/courses/${courseId}/quizzes/${quiz.id}/questions`}>
               <Button size="sm" variant="outline">
                 Edit questions

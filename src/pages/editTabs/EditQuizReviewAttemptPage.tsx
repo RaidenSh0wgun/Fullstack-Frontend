@@ -1,29 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchQuizAttemptDetail,
   fetchQuizDetail,
   updateQuizAttempt,
-  type QuizDetail,
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-function computeScore(quiz: QuizDetail, answers: Record<string, number | undefined>) {
-  let score = 0;
-  let total = quiz.questions.length || 1;
-  for (const q of quiz.questions) {
-    const selectedId = answers[String(q.id)];
-    if (!selectedId) continue;
-    const selected = q.choices.find((c) => c.id === selectedId);
-    // Backend hides is_correct from read payload; score is authoritative from server.
-    // This function exists only as a UI helper when teacher edits answers.
-    if (selected) score += 0;
-  }
-  return { score, total };
-}
 
 export default function EditQuizReviewAttemptPage() {
   const { courseId, quizId, attemptId } = useParams<{
@@ -57,7 +42,7 @@ export default function EditQuizReviewAttemptPage() {
     return Object.keys(answersDraft).length > 0 || overrideDraft.length > 0;
   }, [attempt, answersDraft, overrideDraft]);
 
-  useMemo(() => {
+  useEffect(() => {
     if (!attempt || hydrated) return;
     setAnswersDraft((attempt.answers as Record<string, number>) ?? {});
     setOverrideDraft(

@@ -242,6 +242,7 @@ export default function CourseDetailPage() {
                 quiz={quiz}
                 courseId={id}
                 isTeacher={isTeacher}
+                isEnrolled={course?.is_enrolled ?? false}
                 onDelete={() => deleteQuizMutation.mutate(quiz.id)}
               />
             ))}
@@ -261,11 +262,13 @@ function QuizRow({
   quiz,
   courseId,
   isTeacher,
+  isEnrolled,
   onDelete,
 }: {
   quiz: Quiz;
   courseId: number;
   isTeacher: boolean;
+  isEnrolled: boolean;
   onDelete: () => void;
 }) {
   const taken = quiz.has_attempted ?? false;
@@ -290,12 +293,14 @@ function QuizRow({
               Delete
             </Button>
           </>
-        ) : (
-          <Link to={taken ? "#" : `/quiz/${quiz.id}`}>
-            <Button size="sm" disabled={taken}>
-              {taken ? "Completed" : "Take quiz"}
-            </Button>
+        ) : isEnrolled ? (
+          <Link to={`/quiz/${quiz.id}${taken ? "?viewAttempt=true" : ""}`}>
+            <Button size="sm">{taken ? "View attempt" : "Take quiz"}</Button>
           </Link>
+        ) : (
+          <Button disabled size="sm" variant="outline">
+            Enroll to take quiz
+          </Button>
         )}
       </div>
     </li>

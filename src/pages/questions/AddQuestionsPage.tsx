@@ -61,7 +61,7 @@ export default function AddQuestionsPage() {
   const handleAddQuestion = (e: React.FormEvent) => {
     e.preventDefault();
     if (!questionText.trim()) return;
-    let payload: QuizQuestionPayload = {
+    const payload: QuizQuestionPayload = {
       text: questionText.trim(),
       question_type: questionType,
       correct_text: correctText,
@@ -232,7 +232,7 @@ export default function AddQuestionsPage() {
       </section>
 
       <Button variant="outline" onClick={() => navigate(`/courses/${cid}`)}>
-        Done, back to course
+        Finish
       </Button>
     </div>
   );

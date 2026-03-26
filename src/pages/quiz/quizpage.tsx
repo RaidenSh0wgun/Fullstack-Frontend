@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   fetchQuizDetail,
+  fetchQuizAttempts,
   submitQuizAnswers,
   type Question,
 } from "@/services/api";
@@ -21,11 +22,21 @@ export default function QuizPage() {
   const navigate = useNavigate();
 
   const numericId = Number(quizId);
+  const [searchParams] = useSearchParams();
+  const viewAttempt = searchParams.get("viewAttempt") === "true";
 
   const { data: quiz, isLoading } = useQuery({
     queryKey: ["quiz-detail", numericId],
     queryFn: () => fetchQuizDetail(numericId),
     enabled: Number.isFinite(numericId),
+  });
+
+  const showAttempt = viewAttempt || (quiz?.has_attempted ?? false);
+
+  const { data: attempts, isLoading: attemptsLoading } = useQuery({
+    queryKey: ["quiz-attempts", numericId],
+    queryFn: () => fetchQuizAttempts(numericId),
+    enabled: Number.isFinite(numericId) && showAttempt,
   });
 
   const [answers, setAnswers] = useState<Record<number, number>>({});
@@ -38,6 +49,22 @@ export default function QuizPage() {
       setSubmittedScore(data.score);
     },
   });
+
+  useEffect(() => {
+    if (!showAttempt || !attempts || attempts.length === 0) return;
+
+    const attempt = attempts[0];
+    setSubmittedScore(attempt.score);
+
+    const normalizedAnswers: Record<number, number> = {};
+    Object.entries(attempt.answers ?? {}).forEach(([key, value]) => {
+      const num = Number(key);
+      if (!Number.isNaN(num) && typeof value === "number") {
+        normalizedAnswers[num] = value;
+      }
+    });
+    setAnswers(normalizedAnswers);
+  }, [showAttempt, attempts]);
 
   const durationSeconds = useMemo(
     () => (quiz ? quiz.duration_minutes * 60 : null),
@@ -81,7 +108,7 @@ export default function QuizPage() {
     );
   }
 
-  if (isLoading || !quiz || timeLeft === null) {
+  if (isLoading || !quiz || (timeLeft === null && !showAttempt) || (showAttempt && attemptsLoading)) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <p className="text-lg font-medium">Loading quiz...</p>
@@ -89,7 +116,7 @@ export default function QuizPage() {
     );
   }
 
-  const isTimeUp = timeLeft <= 0;
+  const isTimeUp = (timeLeft ?? 0) <= 0;
 
   return (
     <div className="space-y-6">
@@ -107,16 +134,18 @@ export default function QuizPage() {
             </p>
           )}
         </div>
-        <div className="rounded-lg border border-border bg-card px-4 py-2 text-center">
-          <p className="text-xs font-medium text-muted-foreground">Time left</p>
-          <p
-            className={`text-xl font-semibold ${
-              isTimeUp ? "text-destructive" : ""
-            }`}
-          >
-            {formatTime(Math.max(timeLeft, 0))}
-          </p>
-        </div>
+        {!showAttempt && (
+          <div className="rounded-lg border border-border bg-card px-4 py-2 text-center">
+            <p className="text-xs font-medium text-muted-foreground">Time left</p>
+            <p
+              className={`text-xl font-semibold ${
+                isTimeUp ? "text-destructive" : ""
+              }`}
+            >
+              {formatTime(Math.max(timeLeft ?? 0, 0))}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -135,7 +164,7 @@ export default function QuizPage() {
                   <button
                     key={choice.id}
                     type="button"
-                    disabled={isTimeUp || submittedScore !== null}
+                      disabled={isTimeUp || submittedScore !== null || showAttempt}
                     onClick={() => handleSelectChoice(q.id, choice.id)}
                     className={`block w-full rounded-md border px-3 py-2 text-left text-sm transition ${
                       selected
@@ -153,24 +182,50 @@ export default function QuizPage() {
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <Button
-          variant="outline"
-          type="button"
-          onClick={() => navigate("/")}
-          disabled={submitMutation.isPending}
-        >
-          Back to dashboard
-        </Button>
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isTimeUp || submitMutation.isPending || submittedScore !== null}
-        >
-          {submitMutation.isPending ? "Submitting..." : "Submit quiz"}
-        </Button>
+        {showAttempt ? (
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => navigate("/")}
+            disabled={submitMutation.isPending}
+          >
+            Back to dashboard
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => navigate(`?viewAttempt=true`)}
+            disabled={submitMutation.isPending}
+          >
+            View score
+          </Button>
+        )}
+        {!showAttempt && (
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isTimeUp || submitMutation.isPending || submittedScore !== null}
+          >
+            {submitMutation.isPending ? "Submitting..." : "Submit quiz"}
+          </Button>
+        )}
       </div>
 
-      {submittedScore !== null && (
+      {showAttempt && (
+        <div className="mt-4 rounded-lg border border-border bg-card p-4 text-center">
+          <p className="text-sm font-medium">
+            You have already completed this quiz.
+          </p>
+          {submittedScore !== null && (
+            <p className="text-sm font-medium mt-2">
+              Your score: <span className="font-semibold">{submittedScore}</span>
+            </p>
+          )}
+        </div>
+      )}
+
+      {!showAttempt && submittedScore !== null && (
         <div className="mt-4 rounded-lg border border-border bg-card p-4 text-center">
           <p className="text-sm font-medium">
             Your score: <span className="font-semibold">{submittedScore}</span>

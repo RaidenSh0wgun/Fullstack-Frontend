@@ -24,19 +24,34 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     try {
       if (mode === "login") {
-        await login({ username, password});
+        await login({ username, password });
       } else {
         await register({ username, password, email, role });
       }
+
       const redirectTo = location.state?.from?.pathname ?? "/";
       navigate(redirectTo, { replace: true });
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.detail ??
-          "Something went wrong. Please check your details and try again."
-      );
+
+    } catch (err: unknown) {
+
+      let message =
+        "Something went wrong. Please check your details and try again.";
+
+      if (typeof err === "object" && err !== null) {
+        const maybeAxiosError = err as {
+          response?: { data?: { detail?: string } };
+        };
+
+        if (maybeAxiosError.response?.data?.detail) {
+          message = maybeAxiosError.response.data.detail;
+        }
+      }
+
+      setError(message);
+
     } finally {
       setLoading(false);
     }
@@ -48,6 +63,7 @@ export default function LoginPage() {
         <h1 className="mb-1 text-center text-2xl font-semibold">
           {mode === "login" ? "Login" : "Register"}
         </h1>
+
         <p className="mb-6 text-center text-sm text-muted-foreground">
           {mode === "login"
             ? "Sign in to your existing account."
@@ -66,6 +82,7 @@ export default function LoginPage() {
           >
             Login
           </button>
+
           <button
             type="button"
             className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
@@ -85,6 +102,7 @@ export default function LoginPage() {
               <label className="text-sm font-medium" htmlFor="role">
                 Role
               </label>
+
               <select
                 id="role"
                 value={role}
@@ -101,6 +119,7 @@ export default function LoginPage() {
             <label className="text-sm font-medium" htmlFor="username">
               Username
             </label>
+
             <input
               id="username"
               type="text"
@@ -117,6 +136,7 @@ export default function LoginPage() {
               <label className="text-sm font-medium" htmlFor="email">
                 Email
               </label>
+
               <input
                 id="email"
                 type="email"
@@ -132,6 +152,7 @@ export default function LoginPage() {
             <label className="text-sm font-medium" htmlFor="password">
               Password
             </label>
+
             <input
               id="password"
               type="password"
@@ -170,4 +191,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

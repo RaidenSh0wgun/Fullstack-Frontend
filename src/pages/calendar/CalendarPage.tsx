@@ -1,17 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchMyEvents, type CalendarEvent } from "@/services/api";
-
+import { fetchMyEvents, type CalendarEvent } from "@/services/api"; 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
+import { useNavigate } from "react-router-dom";
+
+function formatEventTime(d: Date | null): string {
+  if (!d) return "";
+  const parts = d
+    .toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .split(" ");
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[1].toUpperCase()}`;
+}
 
 export default function CalendarPage() {
   const { data: events, isLoading, error } = useQuery({
     queryKey: ["events"],
     queryFn: fetchMyEvents,
   });
+
+  const navigate = useNavigate();
 
   if (isLoading) {
     return <p className="text-muted-foreground">Loading calendar...</p>;
@@ -27,11 +42,16 @@ export default function CalendarPage() {
   }
 
   const calendarEvents = (events ?? []).filter((e: CalendarEvent): e is CalendarEvent & {start: string} => !!e.start).map((e) => ({
-    id: e.id.toString(), // FullCalendar prefers string IDs
+    id: e.id.toString(),
     title: e.title,
     start: e.start,
+    backgroundColor: "#e5e7eb",
+    borderColor: "#d1d5db",
+    textColor: "#111827",
     extendedProps: {
       description: e.description,
+      relatedQuizId: e.related_quiz,
+      eventType: e.event_type,
     },
   }));
 
@@ -57,10 +77,39 @@ export default function CalendarPage() {
               right: "dayGridMonth,timeGridWeek,listWeek",
             }}
             events={calendarEvents}
+            eventDisplay="block"
+            eventContent={(arg) => {
+              const relatedQuizId = (arg.event.extendedProps as any)?.relatedQuizId;
+              const time = formatEventTime(arg.event.start);
+              const title = arg.event.title || "";
+
+              return (
+                <div
+                  className={`px-1 py-0.5 leading-tight overflow-hidden ${
+                    relatedQuizId ? "cursor-pointer" : ""
+                  }`}
+                >
+                  {time ? (
+                    <div className="text-[11px] font-medium whitespace-nowrap">
+                      {time}
+                    </div>
+                  ) : null}
+                  <div className="text-[11px] whitespace-normal break-words line-clamp-2">
+                    {title}
+                  </div>
+                </div>
+              );
+            }}
             eventClick={(info) => {
+              const relatedQuizId = (info.event.extendedProps as any)?.relatedQuizId;
+              if (relatedQuizId) {
+                navigate(`/quizview/${relatedQuizId}`);
+                return;
+              }
+
               alert(
                 `${info.event.title}\n${info.event.start?.toLocaleString() ?? ""}\n${
-                  info.event.extendedProps.description || ""
+                  (info.event.extendedProps as any)?.description || ""
                 }`
               );
             }}
@@ -79,7 +128,12 @@ export default function CalendarPage() {
             {sorted.map((e) => (
               <li
                 key={e.id}
-                className="flex flex-wrap items-center gap-4 px-4 py-3 hover:bg-muted/50"
+                className={`flex flex-wrap items-center gap-4 px-4 py-3 hover:bg-muted/50 ${
+                  e.related_quiz ? "cursor-pointer" : ""
+                }`}
+                onClick={() => {
+                  if (e.related_quiz) navigate(`/quizview/${e.related_quiz}`);
+                }}
               >
                 <div className="min-w-[180px] text-sm text-muted-foreground">
                   {new Date(e.start).toLocaleString()}

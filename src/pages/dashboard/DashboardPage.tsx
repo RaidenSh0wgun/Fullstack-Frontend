@@ -1,7 +1,12 @@
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchTeacherCourses, fetchMyEvents, fetchPendingQuizzes } from "@/services/api";
+import {
+  fetchTeacherCourses,
+  fetchMyEvents,
+  fetchPendingQuizzes,
+  fetchAttemptedQuizzes,
+} from "@/services/api";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
@@ -87,6 +92,12 @@ function StudentDashboard() {
     queryKey: ["pending-quizzes"],
     queryFn: fetchPendingQuizzes,
   });
+
+  const { data: attempted } = useQuery({
+    queryKey: ["attempted-quizzes"],
+    queryFn: fetchAttemptedQuizzes,
+  });
+
   const { data: events } = useQuery({
     queryKey: ["events"],
     queryFn: fetchMyEvents,
@@ -114,7 +125,7 @@ function StudentDashboard() {
                       </div>
                     )}
                   </div>
-                  <Link to={`/quiz/${q.id}`}>
+                  <Link to={`/quizview/${q.id}`}>
                     <Button size="sm">Take quiz</Button>
                   </Link>
                 </li>
@@ -122,6 +133,28 @@ function StudentDashboard() {
             </ul>
           ) : (
             <p className="text-sm text-muted-foreground">No pending quizzes.</p>
+          )}
+
+          {!!attempted?.length && (
+            <div className="mt-6 pt-4 border-t border-border">
+              <h3 className="text-sm font-semibold mb-3">
+                Completed quizzes
+              </h3>
+              <ul className="space-y-2">
+                {attempted.slice(0, 5).map((q) => (
+                  <li key={q.id} className="flex items-center justify-between gap-2">
+                    <div>
+                      <span className="font-medium">{q.title}</span>
+                    </div>
+                    <Link to={`/quiz/${q.id}?viewAttempt=true`}>
+                      <Button size="sm" variant="outline">
+                        View attempt
+                      </Button>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
         <div className="rounded-xl border border-border bg-card p-4">

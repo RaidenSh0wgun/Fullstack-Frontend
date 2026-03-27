@@ -4,11 +4,16 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   fetchQuizDetail,
   fetchQuizAttempts,
+  fetchQuizTimer,
   submitQuizAnswers,
   type Question,
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+
+function timerStorageKey(quizId: number) {
+  return `quiz_timer_remaining_${quizId}`;
+}
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -52,15 +57,11 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState<Record<number, number | string>>({});
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [submittedScore, setSubmittedScore] = useState<number | null>(null);
-  const [clientScore, setClientScore] = useState<number | null>(null); // fallback score calculation
+  const [clientScore, setClientScore] = useState<number | null>(null);
 
   const submitMutation = useMutation({
     mutationFn: () => {
-      const onlyNumbers: Record<number, number> = {};
-      Object.entries(answers).forEach(([key, val]) => {
-        if (typeof val === "number") onlyNumbers[Number(key)] = val;
-      });
-      return submitQuizAnswers(numericId, onlyNumbers);
+      return submitQuizAnswers(numericId, answers);
     },
     onSuccess: (data) => {
       console.log("Submit response from backend:", data);
@@ -73,7 +74,7 @@ export default function QuizPage() {
         quiz.questions.forEach((q) => {
           const userAns = answers[q.id];
           if (shouldRenderAsIdentification(q) && typeof userAns === "string") {
-            const correctAns = (q as any).correctAnswer || ""; 
+            const correctAns = (q as any).correct_text || "";
             if (userAns.trim().toLowerCase() === correctAns.toString().trim().toLowerCase()) {
               correct++;
             }
@@ -81,6 +82,8 @@ export default function QuizPage() {
         });
         setClientScore(correct);
       }
+
+      navigate(`/quizview/${numericId}`, { replace: true });
     },
     onError: (error) => {
       console.error("Quiz submission failed:", error);
@@ -107,16 +110,52 @@ export default function QuizPage() {
     [quiz]
   );
 
+  const { data: timerData, isLoading: timerLoading } = useQuery({
+    queryKey: ["quiz-timer", numericId],
+    queryFn: () => fetchQuizTimer(numericId),
+    enabled: Number.isFinite(numericId) && !showAttempt && !isLoading,
+  });
+
   useEffect(() => {
-    if (showAttempt || !durationSeconds) return;
-    setTimeLeft(durationSeconds);
+    if (showAttempt) return;
+    if (timeLeft !== null) return;
+    if (!Number.isFinite(numericId)) return;
 
+    const raw = localStorage.getItem(timerStorageKey(numericId));
+    const fromStorage = raw ? Number(raw) : NaN;
+    if (Number.isFinite(fromStorage)) {
+      setTimeLeft(Math.max(0, Math.floor(fromStorage)));
+      return;
+    }
+
+    if (durationSeconds !== null) {
+      setTimeLeft(durationSeconds);
+    }
+  }, [showAttempt, timeLeft, numericId, durationSeconds]);
+
+  useEffect(() => {
+    if (showAttempt) return;
+    if (timerLoading) return;
+    if (timerData) {
+      setTimeLeft(timerData.remaining_seconds);
+      return;
+    }
+  }, [showAttempt, timerLoading, timerData]);
+
+  useEffect(() => {
+    if (showAttempt || timeLeft === null || timeLeft <= 0) return;
     const interval = setInterval(() => {
-      setTimeLeft((prev) => (prev && prev > 0 ? prev - 1 : 0));
+      setTimeLeft((prev) => (prev !== null && prev > 0 ? prev - 1 : 0));
     }, 1000);
-
     return () => clearInterval(interval);
-  }, [durationSeconds, showAttempt]);
+  }, [showAttempt, timeLeft]);
+
+  useEffect(() => {
+    if (showAttempt) return;
+    if (!Number.isFinite(numericId)) return;
+    if (timeLeft === null) return;
+    localStorage.setItem(timerStorageKey(numericId), String(timeLeft));
+  }, [showAttempt, numericId, timeLeft]);
 
   useEffect(() => {
     if (showAttempt || timeLeft === null || timeLeft > 0) return;
@@ -232,7 +271,18 @@ export default function QuizPage() {
       </div>
 
       <div className="flex justify-between pt-4">
-        <Button variant="outline" onClick={() => navigate("/")}>
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (!showAttempt && timeLeft !== null && timeLeft > 0) {
+              const ok = window.confirm(
+                "Are you sure you want to leave the quiz? The timer will keep counting down."
+              );
+              if (!ok) return;
+            }
+            navigate("/");
+          }}
+        >
           Back to dashboard
         </Button>
 

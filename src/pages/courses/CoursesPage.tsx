@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import {
   fetchTeacherCourses,
   fetchCourses,
+  fetchEnrolledCourses,
   createCourse,
   type Course,
 } from "@/services/api";
@@ -30,9 +31,21 @@ export default function CoursesPage() {
   const [courseTitle, setCourseTitle] = useState("");
   const [courseDescription, setCourseDescription] = useState("");
 
+  const [viewMode, setViewMode] = useState<"all" | "my">("all");
+
   const { data: courses, isLoading } = useQuery({
-    queryKey: ["courses", isTeacher],
-    queryFn: isTeacher ? fetchTeacherCourses : fetchCourses,
+    queryKey: ["courses", viewMode, isTeacher],
+    queryFn: () => {
+      if (viewMode === "all") {
+        return fetchCourses();
+      }
+
+      if (viewMode === "my") {
+        return isTeacher ? fetchTeacherCourses() : fetchEnrolledCourses();
+      }
+
+      return fetchCourses();
+    },
   });
   const courseList = (courses ?? []) as Course[];
 
@@ -67,8 +80,26 @@ export default function CoursesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Courses</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Courses</h1>
+          <div className="mt-3 flex gap-2">
+            <Button
+              size="sm"
+              variant={viewMode === "all" ? "default" : "outline"}
+              onClick={() => setViewMode("all")}
+            >
+              All Courses
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === "my" ? "default" : "outline"}
+              onClick={() => setViewMode("my")}
+            >
+              My Courses
+            </Button>
+          </div>
+        </div>
         {isTeacher && (
           <Dialog open={openCreateCourse} onOpenChange={setOpenCreateCourse}>
             <DialogTrigger asChild>
@@ -139,9 +170,12 @@ export default function CoursesPage() {
         </div>
       ) : (
         <p className="text-muted-foreground">
-          {isTeacher
-            ? "You have no courses yet."
-            : "No courses available to enroll in yet."}
+          {viewMode === "all" && courseList.length === 0 &&
+            "No courses available yet."}
+          {viewMode === "my" && isTeacher &&
+            "You have no courses yet."}
+          {viewMode === "my" && !isTeacher &&
+            "You are not enrolled in any courses yet."}
         </p>
       )}
     </div>

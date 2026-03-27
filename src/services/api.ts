@@ -166,9 +166,13 @@ export async function fetchCurrentUser(accessToken?: string): Promise<User> {
 }
 
 
-export async function fetchTeacherCourses(): Promise<Course[]> {
-  const { data } = await api.get<Course[]>("/courses/");
+export async function fetchMyCourses(): Promise<Course[]> {
+  const { data } = await api.get<Course[]>("/courses/my/");
   return data;
+}
+
+export async function fetchTeacherCourses(): Promise<Course[]> {
+  return fetchMyCourses();
 }
 
 export async function createCourse(

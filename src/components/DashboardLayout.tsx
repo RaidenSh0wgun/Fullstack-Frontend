@@ -1,17 +1,25 @@
-import { Link, useLocation, Outlet } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
-const nav = [
-  { to: "/", label: "Dashboard" },
-  { to: "/courses", label: "Courses" },
-  { to: "/calendar", label: "Calendar" },
-];
-
-const instructorNav = [
-  { to: "/students", label: "Students" },
-  { to: "/scores", label: "Quiz scores" },
-];
+import {
+  LayoutDashboard,
+  BookOpen,
+  Calendar,
+  Users,
+  BarChart3,
+  PanelLeft,
+} from "lucide-react";
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
@@ -23,66 +31,90 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <aside className="w-56 shrink-0 border-r border-border bg-card/50 flex flex-col">
-        <div className="p-4 border-b border-border">
-          <Link to="/" className="flex items-center gap-2 font-semibold">
-            <img
-              src="/src/assets/quiz_logo.png"
-              alt="Quiz App"
-              className="h-8 w-8 rounded-md object-cover"
-            />
-            <span>Quiz App</span>
-          </Link>
-        </div>
-        <nav className="flex-1 p-3 space-y-1">
-          {nav.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                isActive(item.to)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              {item.label}
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <Sidebar>
+          <SidebarHeader className="px-4 py-4">
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src="/src/assets/quiz_logo.png"
+                alt="Quiz App"
+                className="h-9 w-9 rounded-md"
+              />
+              <span className="font-semibold text-lg">Quiz App</span>
             </Link>
-          ))}
-          {user?.role === "teacher" &&
-            instructorNav.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  isActive(item.to)
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-        </nav>
-        <div className="p-3 border-t border-border">
-          <div className="text-xs text-muted-foreground truncate px-2 py-1">
-            {user?.username} ({user?.role})
+          </SidebarHeader>
+          <SidebarContent className="px-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/")}>
+                  <Link to="/" className="flex items-center gap-3">
+                    <LayoutDashboard size={18} />
+                    Dashboard
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/courses")}>
+                  <Link to="/courses" className="flex items-center gap-3">
+                    <BookOpen size={18} />
+                    Courses
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/calendar")}>
+                  <Link to="/calendar" className="flex items-center gap-3">
+                    <Calendar size={18} />
+                    Calendar
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {user?.role === "teacher" && (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive("/students")}>
+                      <Link to="/students" className="flex items-center gap-3">
+                        <Users size={18} />
+                        Students
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive("/scores")}>
+                      <Link to="/scores" className="flex items-center gap-3">
+                        <BarChart3 size={18} />
+                        Quiz Scores
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter className="px-4 py-4 space-y-2">
+            <div className="text-sm text-muted-foreground">
+              {user?.username} ({user?.role})
+            </div>
+            <button
+              onClick={logout}
+              className="w-full rounded-md border px-3 py-2 text-sm hover:bg-muted transition"
+            >
+              Logout
+            </button>
+          </SidebarFooter>
+        </Sidebar>
+        <div className="flex flex-col flex-1">
+          <div className="h-14 flex items-center border-b px-4 mb-4">
+            <SidebarTrigger>
+              <PanelLeft size={20} />
+            </SidebarTrigger>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full mt-2"
-            onClick={logout}
-          >
-            Logout
-          </Button>
+          <main className="flex-1 px-6 pb-6">
+            <Outlet />
+          </main>
         </div>
-      </aside>
-      <main className="flex-1 overflow-auto">
-        <div className="p-6 max-w-5xl mx-auto">
-          <Outlet />
-        </div>
-      </main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }

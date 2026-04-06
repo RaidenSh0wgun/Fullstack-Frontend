@@ -51,6 +51,7 @@ export interface Quiz {
   is_active?: boolean;
   due_date?: string | null;
   has_attempted?: boolean;
+  question_count?: number;
 }
 
 export interface QuestionChoice {
@@ -69,6 +70,19 @@ export interface Question {
 export interface QuizDetail extends Quiz {
   questions: Question[];
   has_attempted?: boolean;
+}
+
+export interface QuizAttemptScore {
+  id: number;
+  score: number;
+  total: number;
+  effective_score?: number;
+  created_at?: string;
+}
+
+export interface QuizViewResponse {
+  quiz: Quiz;
+  attempt: QuizAttemptScore | null;
 }
 
 export interface QuizChoicePayload {
@@ -261,12 +275,22 @@ export async function updateQuestion(
 
 export async function submitQuizAnswers(
   quizId: number,
-  answers: Record<number, number>
+  answers: Record<number, number | string>
 ): Promise<{ score: number; total: number }> {
   const { data } = await api.post<{ score: number; total: number }>(
     `/quizzes/${quizId}/submit/`,
     { answers }
   );
+  return data;
+}
+
+export interface QuizTimerResponse {
+  started_at: string | null;
+  remaining_seconds: number;
+}
+
+export async function fetchQuizTimer(quizId: number): Promise<QuizTimerResponse> {
+  const { data } = await api.get<QuizTimerResponse>(`/quizzes/${quizId}/timer/`);
   return data;
 }
 
@@ -288,6 +312,18 @@ export async function fetchMyEvents(): Promise<CalendarEvent[]> {
 
 export async function fetchPendingQuizzes(): Promise<Quiz[]> {
   const { data } = await api.get<Quiz[]>("/quizzes/pending/");
+  return data;
+}
+
+export async function fetchAttemptedQuizzes(): Promise<Quiz[]> {
+  const { data } = await api.get<Quiz[]>("/quizzes/attempted/");
+  return data;
+}
+
+export async function fetchQuizViewDetail(
+  quizId: number
+): Promise<QuizViewResponse> {
+  const { data } = await api.get<QuizViewResponse>(`/quizzes/${quizId}/view/`);
   return data;
 }
 
@@ -313,7 +349,7 @@ export interface QuizAttempt {
   score_override?: number | null;
   effective_score?: number;
   total: number;
-  answers?: Record<string, number>;
+  answers?: Record<string, number | string>;
   created_at: string;
   edited_at?: string | null;
   edited_by?: number | null;
@@ -346,7 +382,6 @@ export async function updateQuizAttempt(
   return data;
 }
 
-// Student: courses they can enroll in (for dropdown / list)
 /** For teacher: their courses. For student: use fetchEnrolledCourses for "my courses" or fetchCourses() for all. */
 export async function fetchEnrolledCourses(): Promise<Course[]> {
   const { data } = await api.get<Course[]>("/courses/enrolled/");

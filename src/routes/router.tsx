@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "@/pages/auths/loginpage";
 import QuizPage from "@/pages/quiz/quizpage";
+import QuizViewPage from "@/pages/quiz/viewquizpage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import CoursesPage from "../pages/courses/CoursesPage";
 import CourseDetailPage from "@/pages/courses/CourseDetailPage";
@@ -27,6 +28,15 @@ export default function AppRouter() {
         element={
           <ProtectedRoute allowedRoles={["student"]}>
             <QuizPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/quizview/:quizId"
+        element={
+          <ProtectedRoute>
+            <QuizViewPage />
           </ProtectedRoute>
         }
       />

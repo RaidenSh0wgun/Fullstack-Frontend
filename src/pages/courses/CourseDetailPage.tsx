@@ -294,7 +294,7 @@ function QuizRow({
             </Button>
           </>
         ) : isEnrolled ? (
-          <Link to={`/quiz/${quiz.id}${taken ? "?viewAttempt=true" : ""}`}>
+          <Link to={`/quizview/${quiz.id}`}>
             <Button size="sm">{taken ? "View attempt" : "Take quiz"}</Button>
           </Link>
         ) : (

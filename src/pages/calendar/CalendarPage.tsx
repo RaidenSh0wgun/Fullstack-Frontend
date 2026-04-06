@@ -6,6 +6,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function formatEventTime(d: Date | null): string {
   if (!d) return "";
@@ -66,60 +67,62 @@ export default function CalendarPage() {
         Quiz deadlines from your enrolled courses appear here automatically.
       </p>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="p-4">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "dayGridMonth,timeGridWeek,listWeek",
-            }}
-            events={calendarEvents}
-            eventDisplay="block"
-            eventContent={(arg) => {
-              const relatedQuizId = (arg.event.extendedProps as any)?.relatedQuizId;
-              const time = formatEventTime(arg.event.start);
-              const title = arg.event.title || "";
+      <div className="rounded-xl border border-border bg-card h-[500px]">
+        <ScrollArea className="h-full w-full rounded-xl">
+          <div className="p-4 h-full">
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              headerToolbar={{
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,timeGridWeek,listWeek",
+              }}
+              events={calendarEvents}
+              eventDisplay="block"
+              eventContent={(arg) => {
+                const relatedQuizId = (arg.event.extendedProps as any)?.relatedQuizId;
+                const time = formatEventTime(arg.event.start);
+                const title = arg.event.title || "";
 
-              return (
-                <div
-                  className={`px-1 py-0.5 leading-tight overflow-hidden ${
-                    relatedQuizId ? "cursor-pointer" : ""
-                  }`}
-                >
-                  {time ? (
-                    <div className="text-[11px] font-medium whitespace-nowrap">
-                      {time}
+                return (
+                  <div
+                    className={`px-1 py-0.5 leading-tight overflow-hidden ${
+                      relatedQuizId ? "cursor-pointer" : ""
+                    }`}
+                  >
+                    {time ? (
+                      <div className="text-[11px] font-medium whitespace-nowrap">
+                        {time}
+                      </div>
+                    ) : null}
+                    <div className="text-[11px] whitespace-normal break-words line-clamp-2">
+                      {title}
                     </div>
-                  ) : null}
-                  <div className="text-[11px] whitespace-normal break-words line-clamp-2">
-                    {title}
                   </div>
-                </div>
-              );
-            }}
-            eventClick={(info) => {
-              const relatedQuizId = (info.event.extendedProps as any)?.relatedQuizId;
-              if (relatedQuizId) {
-                navigate(`/quizview/${relatedQuizId}`);
-                return;
-              }
+                );
+              }}
+              eventClick={(info) => {
+                const relatedQuizId = (info.event.extendedProps as any)?.relatedQuizId;
+                if (relatedQuizId) {
+                  navigate(`/quizview/${relatedQuizId}`);
+                  return;
+                }
 
-              alert(
-                `${info.event.title}\n${info.event.start?.toLocaleString() ?? ""}\n${
-                  (info.event.extendedProps as any)?.description || ""
-                }`
-              );
-            }}
-            height="auto"
-            contentHeight="auto"
-            aspectRatio={1.35}
-            editable={false}
-            selectable={false}
-          />
-        </div>
+                alert(
+                  `${info.event.title}\n${info.event.start?.toLocaleString() ?? ""}\n${
+                    (info.event.extendedProps as any)?.description || ""
+                  }`
+                );
+              }}
+              height="auto"
+              contentHeight="auto"
+              aspectRatio={1.35}
+              editable={false}
+              selectable={false}
+            />
+          </div>
+        </ScrollArea>
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden">

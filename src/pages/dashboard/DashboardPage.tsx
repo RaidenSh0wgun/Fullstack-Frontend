@@ -115,7 +115,7 @@ function StudentDashboard() {
                     )}
                   </div>
                   <Link to={`/quiz/${q.id}`}>
-                    <Button size="sm">Take quiz</Button>
+                    <Button size="sm">View Quiz</Button>
                   </Link>
                 </li>
               ))}

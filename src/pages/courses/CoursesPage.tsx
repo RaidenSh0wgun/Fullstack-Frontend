@@ -59,7 +59,7 @@ export default function CoursesPage() {
         return;
       }
 
-      if (!isEnrolled) {
+      if (isEnrolled) {
         navigate(`/courses/${courseId}`);
         return;
       }

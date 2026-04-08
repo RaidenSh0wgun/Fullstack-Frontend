@@ -1,5 +1,3 @@
-import axios from "axios";
-
 const API_BASE_URL = "/api";
 
 
@@ -130,28 +128,49 @@ export function clearStoredAuth() {
 
 
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
-});
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+  accessToken?: string
+): Promise<T> {
+  const token = accessToken ?? localStorage.getItem(ACCESS_KEY);
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
 
-api.interceptors.request.use((config) => {
-  const access = localStorage.getItem(ACCESS_KEY);
-  if (access) {
-    config.headers = config.headers ?? {};
-    (config.headers as any).Authorization = `Bearer ${access}`;
+  if (token) {
+    (headers as Record<string, string>).Authorization = `Bearer ${token}`;
   }
-  return config;
-});
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Request failed with status ${response.status}`);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+}
 
 
 export async function loginRequest(
   payload: LoginPayload
 ): Promise<AuthTokens> {
-  const { data } = await api.post<AuthTokens>("/token/", {
-    username: payload.username,
-    password: payload.password,
+  return request<AuthTokens>("/token/", {
+    method: "POST",
+    body: JSON.stringify({
+      username: payload.username,
+      password: payload.password,
+    }),
   });
-  return data;
 }
 
 export async function registerRequest(
@@ -165,25 +184,19 @@ export async function registerRequest(
     role: payload.role,
   };
 
-  const { data } = await api.post<AuthTokens>("/register/", requestData);
-  return data;
+  return request<AuthTokens>("/register/", {
+    method: "POST",
+    body: JSON.stringify(requestData),
+  });
 }
 
 export async function fetchCurrentUser(accessToken?: string): Promise<User> {
-  const { data } = await api.get<User>("/users/me/", {
-    headers: accessToken
-      ? {
-          Authorization: `Bearer ${accessToken}`,
-        }
-      : undefined,
-  });
-  return data;
+  return request<User>("/users/me/", {}, accessToken);
 }
 
 
 export async function fetchMyCourses(): Promise<Course[]> {
-  const { data } = await api.get<Course[]>("/courses/my/");
-  return data;
+  return request<Course[]>("/courses/my/");
 }
 
 export async function fetchTeacherCourses(): Promise<Course[]> {
@@ -193,88 +206,96 @@ export async function fetchTeacherCourses(): Promise<Course[]> {
 export async function createCourse(
   payload: Pick<Course, "title" | "description">
 ): Promise<Course> {
-  const { data } = await api.post<Course>("/courses/", payload);
-  return data;
+  return request<Course>("/courses/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function updateCourse(
   id: number,
   payload: Partial<Pick<Course, "title" | "description" | "is_active">>
 ): Promise<Course> {
-  const { data } = await api.patch<Course>(`/courses/${id}/`, payload);
-  return data;
+  return request<Course>(`/courses/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function deleteCourse(id: number): Promise<void> {
-  await api.delete(`/courses/${id}/`);
+  await request<void>(`/courses/${id}/`, { method: "DELETE" });
 }
 
 export async function enrollCourse(id: number): Promise<Course> {
-  const { data } = await api.post<Course>(`/courses/${id}/enroll/`);
-  return data;
+  return request<Course>(`/courses/${id}/enroll/`, { method: "POST" });
 }
 
 export async function unenrollCourse(id: number): Promise<Course> {
-  const { data } = await api.delete<Course>(`/courses/${id}/enroll/`);
-  return data;
+  return request<Course>(`/courses/${id}/enroll/`, { method: "DELETE" });
 }
 
 export async function fetchQuizzesForCourse(
   courseId: number
 ): Promise<Quiz[]> {
-  const { data } = await api.get<Quiz[]>(`/quizzes/?course=${courseId}`);
-  return data;
+  return request<Quiz[]>(`/quizzes/?course=${courseId}`);
 }
 
 export async function createQuiz(
   payload: QuizCreatePayload
 ): Promise<Quiz> {
-  const { data } = await api.post<Quiz>("/quizzes/", payload);
-  return data;
+  return request<Quiz>("/quizzes/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function updateQuiz(
   id: number,
   payload: Partial<Omit<Quiz, "id" | "course">>
 ): Promise<Quiz> {
-  const { data } = await api.patch<Quiz>(`/quizzes/${id}/`, payload);
-  return data;
+  return request<Quiz>(`/quizzes/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function deleteQuiz(id: number): Promise<void> {
-  await api.delete(`/quizzes/${id}/`);
+  await request<void>(`/quizzes/${id}/`, { method: "DELETE" });
 }
 
 
 export async function fetchQuizDetail(id: number): Promise<QuizDetail> {
-  const { data } = await api.get<QuizDetail>(`/quizzes/${id}/`);
-  return data;
+  return request<QuizDetail>(`/quizzes/${id}/`);
 }
 
 export async function createQuestion(
   quizId: number,
   payload: QuizQuestionPayload
 ): Promise<unknown> {
-  const { data } = await api.post(`/quizzes/${quizId}/questions/`, payload);
-  return data;
+  return request<unknown>(`/quizzes/${quizId}/questions/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function fetchQuizQuestions(quizId: number): Promise<Question[]> {
-  const { data } = await api.get<Question[]>(`/quizzes/${quizId}/questions/`);
-  return data;
+  return request<Question[]>(`/quizzes/${quizId}/questions/`);
 }
 
 export async function deleteQuestion(questionId: number): Promise<void> {
-  await api.delete(`/questions/${questionId}/`);
+  await request<void>(`/questions/${questionId}/`, { method: "DELETE" });
 }
 
 export async function updateQuestion(
   questionId: number,
   payload: Partial<QuizQuestionPayload>
 ): Promise<Question> {
-  const { data } = await api.patch<{ message: string; data: Question }>(
+  const data = await request<{ message: string; data: Question }>(
     `/questions/${questionId}/`,
-    payload
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }
   );
   return data.data;
 }
@@ -283,11 +304,13 @@ export async function submitQuizAnswers(
   quizId: number,
   answers: Record<number, number | string>
 ): Promise<{ score: number; total: number }> {
-  const { data } = await api.post<{ score: number; total: number }>(
+  return request<{ score: number; total: number }>(
     `/quizzes/${quizId}/submit/`,
-    { answers }
+    {
+      method: "POST",
+      body: JSON.stringify({ answers }),
+    }
   );
-  return data;
 }
 
 export interface QuizTimerResponse {
@@ -296,8 +319,7 @@ export interface QuizTimerResponse {
 }
 
 export async function fetchQuizTimer(quizId: number): Promise<QuizTimerResponse> {
-  const { data } = await api.get<QuizTimerResponse>(`/quizzes/${quizId}/timer/`);
-  return data;
+  return request<QuizTimerResponse>(`/quizzes/${quizId}/timer/`);
 }
 
 export interface CalendarEvent {
@@ -312,25 +334,21 @@ export interface CalendarEvent {
 }
 
 export async function fetchMyEvents(): Promise<CalendarEvent[]> {
-  const { data } = await api.get<CalendarEvent[]>("/events/");
-  return data;
+  return request<CalendarEvent[]>("/events/");
 }
 
 export async function fetchPendingQuizzes(): Promise<Quiz[]> {
-  const { data } = await api.get<Quiz[]>("/quizzes/pending/");
-  return data;
+  return request<Quiz[]>("/quizzes/pending/");
 }
 
 export async function fetchAttemptedQuizzes(): Promise<Quiz[]> {
-  const { data } = await api.get<Quiz[]>("/quizzes/attempted/");
-  return data;
+  return request<Quiz[]>("/quizzes/attempted/");
 }
 
 export async function fetchQuizViewDetail(
   quizId: number
 ): Promise<QuizViewResponse> {
-  const { data } = await api.get<QuizViewResponse>(`/quizzes/${quizId}/view/`);
-  return data;
+  return request<QuizViewResponse>(`/quizzes/${quizId}/view/`);
 }
 
 export interface EnrolledStudent {
@@ -342,8 +360,7 @@ export interface EnrolledStudent {
 }
 
 export async function fetchCourseStudents(courseId: number): Promise<EnrolledStudent[]> {
-  const { data } = await api.get<EnrolledStudent[]>(`/courses/${courseId}/students/`);
-  return data;
+  return request<EnrolledStudent[]>(`/courses/${courseId}/students/`);
 }
 
 export interface QuizAttempt {
@@ -362,18 +379,14 @@ export interface QuizAttempt {
 }
 
 export async function fetchQuizAttempts(quizId: number): Promise<QuizAttempt[]> {
-  const { data } = await api.get<QuizAttempt[]>(`/quizzes/${quizId}/attempts/`);
-  return data;
+  return request<QuizAttempt[]>(`/quizzes/${quizId}/attempts/`);
 }
 
 export async function fetchQuizAttemptDetail(
   quizId: number,
   attemptId: number
 ): Promise<QuizAttempt> {
-  const { data } = await api.get<QuizAttempt>(
-    `/quizzes/${quizId}/attempts/${attemptId}/`
-  );
-  return data;
+  return request<QuizAttempt>(`/quizzes/${quizId}/attempts/${attemptId}/`);
 }
 
 export async function updateQuizAttempt(
@@ -381,26 +394,25 @@ export async function updateQuizAttempt(
   attemptId: number,
   payload: Partial<Pick<QuizAttempt, "answers" | "score_override">>
 ): Promise<QuizAttempt> {
-  const { data } = await api.patch<QuizAttempt>(
+  return request<QuizAttempt>(
     `/quizzes/${quizId}/attempts/${attemptId}/`,
-    payload
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }
   );
-  return data;
 }
 
 /** For teacher: their courses. For student: use fetchEnrolledCourses for "my courses" or fetchCourses() for all. */
 export async function fetchEnrolledCourses(): Promise<Course[]> {
-  const { data } = await api.get<Course[]>("/courses/enrolled/");
-  return data;
+  return request<Course[]>("/courses/enrolled/");
 }
 
 export async function fetchCourses(): Promise<Course[]> {
-  const { data } = await api.get<Course[]>("/courses/");
-  return data;
+  return request<Course[]>("/courses/");
 }
 
 export async function fetchCourseDetail(id: number): Promise<Course> {
-  const { data } = await api.get<Course>(`/courses/${id}/detail/`);
-  return data;
+  return request<Course>(`/courses/${id}/detail/`);
 }
 

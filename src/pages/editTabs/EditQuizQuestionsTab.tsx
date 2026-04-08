@@ -34,10 +34,10 @@ function buildPayload(input: {
     };
   }
 
-  if (input.question_type === "identification") {
+  if (input.question_type === "identification" || input.question_type === "enumeration") {
     return {
       text: input.text.trim(),
-      question_type: "identification",
+      question_type: input.question_type,
       correct_text: (input.correct_text || "").trim(),
       choices: [],
     };
@@ -73,7 +73,7 @@ export default function EditQuizQuestionsTab() {
 
   const [newText, setNewText] = useState("");
   const [newType, setNewType] = useState<QuestionType>("mcq");
-  const [newCorrectText, setNewCorrectText] = useState("");
+  const [newCorrectTexts, setNewCorrectTexts] = useState<string[]>([""]);
   const [newChoices, setNewChoices] = useState<QuizChoicePayload[]>([
     { text: "", is_correct: true },
     { text: "", is_correct: false },
@@ -87,7 +87,7 @@ export default function EditQuizQuestionsTab() {
       queryClient.invalidateQueries({ queryKey: ["quiz", qid] });
       setNewText("");
       setNewType("mcq");
-      setNewCorrectText("");
+      setNewCorrectTexts([""]);
       setNewChoices([
         { text: "", is_correct: true },
         { text: "", is_correct: false },
@@ -103,7 +103,7 @@ export default function EditQuizQuestionsTab() {
     const payload = buildPayload({
       text: newText,
       question_type: newType,
-      correct_text: newCorrectText,
+      correct_text: newCorrectTexts.map((v) => v.trim()).filter(Boolean).join("\n"),
       choices: newChoices,
     });
     createMutation.mutate(payload);
@@ -141,6 +141,7 @@ export default function EditQuizQuestionsTab() {
             >
               <option value="mcq">Multiple choice</option>
               <option value="identification">Identification</option>
+              <option value="enumeration">Enumeration</option>
               <option value="tf">True / False</option>
             </select>
           </div>
@@ -184,14 +185,29 @@ export default function EditQuizQuestionsTab() {
             </div>
           )}
 
-          {newType === "identification" && (
-            <div>
+          {(newType === "identification" || newType === "enumeration") && (
+            <div className="space-y-2">
               <Label>Correct answer</Label>
-              <Input
-                value={newCorrectText}
-                onChange={(e) => setNewCorrectText(e.target.value)}
-                placeholder="e.g. 4"
-              />
+              {newCorrectTexts.map((value, idx) => (
+                <Input
+                  key={idx}
+                  value={value}
+                  onChange={(e) =>
+                    setNewCorrectTexts((prev) =>
+                      prev.map((v, i) => (i === idx ? e.target.value : v))
+                    )
+                  }
+                  placeholder={`Answer ${idx + 1}`}
+                />
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setNewCorrectTexts((prev) => [...prev, ""])}
+              >
+                Add another correct answer
+              </Button>
             </div>
           )}
 
@@ -200,8 +216,8 @@ export default function EditQuizQuestionsTab() {
               <Label>Correct answer</Label>
               <select
                 className="h-9 rounded-md border border-input bg-background px-2"
-                value={(newCorrectText || "True").toLowerCase()}
-                onChange={(e) => setNewCorrectText(e.target.value === "true" ? "True" : "False")}
+                value={(newCorrectTexts[0] || "True").toLowerCase()}
+                onChange={(e) => setNewCorrectTexts([e.target.value === "true" ? "True" : "False"])}
               >
                 <option value="true">True</option>
                 <option value="false">False</option>
@@ -258,7 +274,13 @@ function EditableQuestionRow({
 
   const [text, setText] = useState(question.text);
   const [type, setType] = useState<QuestionType>(question.question_type);
-  const [correctText, setCorrectText] = useState(question.correct_text ?? "");
+  const [correctTexts, setCorrectTexts] = useState<string[]>(() => {
+    const base = (question.correct_text || "")
+      .split("\n")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    return base.length ? base : [""];
+  });
   const [choices, setChoices] = useState<QuizChoicePayload[]>(() => {
     if (question.question_type !== "mcq") return initialChoices;
     // We can’t see is_correct in read payload (write_only), so default to first option.
@@ -285,7 +307,7 @@ function EditableQuestionRow({
     const payload = buildPayload({
       text,
       question_type: type,
-      correct_text: correctText,
+      correct_text: correctTexts.map((v) => v.trim()).filter(Boolean).join("\n"),
       choices,
     });
     updateMutation.mutate(payload);
@@ -333,6 +355,7 @@ function EditableQuestionRow({
             >
               <option value="mcq">Multiple choice</option>
               <option value="identification">Identification</option>
+              <option value="enumeration">Enumeration</option>
               <option value="tf">True / False</option>
             </select>
           </div>
@@ -376,10 +399,29 @@ function EditableQuestionRow({
             </div>
           )}
 
-          {type === "identification" && (
-            <div>
+          {(type === "identification" || type === "enumeration") && (
+            <div className="space-y-2">
               <Label>Correct answer</Label>
-              <Input value={correctText} onChange={(e) => setCorrectText(e.target.value)} />
+              {correctTexts.map((value, idx) => (
+                <Input
+                  key={idx}
+                  value={value}
+                  onChange={(e) =>
+                    setCorrectTexts((prev) =>
+                      prev.map((v, i) => (i === idx ? e.target.value : v))
+                    )
+                  }
+                  placeholder={`Answer ${idx + 1}`}
+                />
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setCorrectTexts((prev) => [...prev, ""])}
+              >
+                Add another correct answer
+              </Button>
             </div>
           )}
 
@@ -388,8 +430,8 @@ function EditableQuestionRow({
               <Label>Correct answer</Label>
               <select
                 className="h-9 rounded-md border border-input bg-background px-2"
-                value={(correctText || "True").toLowerCase()}
-                onChange={(e) => setCorrectText(e.target.value === "true" ? "True" : "False")}
+                value={(correctTexts[0] || "True").toLowerCase()}
+                onChange={(e) => setCorrectTexts([e.target.value === "true" ? "True" : "False"])}
               >
                 <option value="true">True</option>
                 <option value="false">False</option>

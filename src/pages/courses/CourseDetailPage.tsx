@@ -6,6 +6,8 @@ import {
   fetchQuizzesForCourse,
   createQuiz,
   deleteQuiz,
+  deleteCourse,
+  updateCourse,
   enrollCourse,
   unenrollCourse,
   type Quiz,
@@ -51,6 +53,20 @@ export default function CourseDetailPage() {
     onSuccess: () => {
       refetchCourse();
       queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+  const toggleCourseMutation = useMutation({
+    mutationFn: (is_active: boolean) => updateCourse(id, { is_active }),
+    onSuccess: () => {
+      refetchCourse();
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+  const deleteCourseMutation = useMutation({
+    mutationFn: () => deleteCourse(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      navigate("/courses");
     },
   });
 
@@ -135,8 +151,34 @@ export default function CourseDetailPage() {
           {course?.description && (
             <p className="text-muted-foreground">{course.description}</p>
           )}
+          {isTeacher && course?.is_active === false && (
+            <p className="text-xs text-amber-600 mt-1">Deactivated</p>
+          )}
         </div>
-        {!isTeacher && course && (
+        {isTeacher && course ? (
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={toggleCourseMutation.isPending}
+              onClick={() => toggleCourseMutation.mutate(!(course.is_active ?? true))}
+            >
+              {(course.is_active ?? true) ? "Deactivate course" : "Reactivate course"}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={deleteCourseMutation.isPending}
+              onClick={() => {
+                if (confirm(`Delete course "${course.title}" and its quizzes?`)) {
+                  deleteCourseMutation.mutate();
+                }
+              }}
+            >
+              Delete course
+            </Button>
+          </div>
+        ) : !isTeacher && course && (
           <div>
             {course.is_enrolled ? (
               <Button

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   fetchQuizDetail,
+  fetchQuizQuestions,
   fetchQuizAttempts,
   fetchQuizTimer,
   submitQuizAnswers,
@@ -21,7 +22,7 @@ function formatTime(seconds: number) {
   return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
-function shouldRenderAsIdentification(q: Question): boolean {
+function shouldRenderAsTextAnswer(q: Question): boolean {
   const raw = q as any;
   const hasChoices = Array.isArray(raw.choices) && raw.choices.length > 0;
   return !hasChoices;
@@ -30,6 +31,22 @@ function shouldRenderAsIdentification(q: Question): boolean {
 function shouldRenderAsMultipleChoice(q: Question): boolean {
   const raw = q as any;
   return Array.isArray(raw.choices) && raw.choices.length > 0;
+}
+
+function parseExpectedTextAnswers(q: Question): string[] {
+  const raw = ((q as any).correct_text || "")
+    .split("\n")
+    .map((v: string) => v.trim())
+    .filter(Boolean);
+  return raw;
+}
+
+function parseSubmittedTextAnswers(value: number | string | undefined, count: number): string[] {
+  const base = typeof value === "string"
+    ? value.split("\n")
+    : [];
+  const normalized = Array.from({ length: Math.max(1, count) }, (_, idx) => (base[idx] || ""));
+  return normalized;
 }
 
 export default function QuizPage() {
@@ -41,12 +58,20 @@ export default function QuizPage() {
   const viewAttempt = searchParams.get("viewAttempt") === "true";
 
   const { data: quiz, isLoading } = useQuery({
-    queryKey: ["quiz-detail", numericId],
+    queryKey: ["quiz", numericId],
     queryFn: () => fetchQuizDetail(numericId),
     enabled: Number.isFinite(numericId),
   });
 
+  const { data: fallbackQuestions } = useQuery({
+    queryKey: ["quiz-questions", numericId],
+    queryFn: () => fetchQuizQuestions(numericId),
+    enabled: Number.isFinite(numericId),
+  });
+
   const showAttempt = viewAttempt || (quiz?.has_attempted ?? false);
+  const questions: Question[] =
+    quiz?.questions?.length ? quiz.questions : (fallbackQuestions ?? []);
 
   const { data: attempts, isLoading: attemptsLoading } = useQuery({
     queryKey: ["quiz-attempts", numericId],
@@ -71,9 +96,9 @@ export default function QuizPage() {
       
       if (serverScore === null && quiz) {
         let correct = 0;
-        quiz.questions.forEach((q) => {
+        questions.forEach((q) => {
           const userAns = answers[q.id];
-          if (shouldRenderAsIdentification(q) && typeof userAns === "string") {
+          if (shouldRenderAsTextAnswer(q) && typeof userAns === "string") {
             const correctAns = (q as any).correct_text || "";
             if (userAns.trim().toLowerCase() === correctAns.toString().trim().toLowerCase()) {
               correct++;
@@ -171,7 +196,16 @@ export default function QuizPage() {
 
   const handleText = (qid: number, text: string) => {
     if (showAttempt) return;
-    setAnswers((prev) => ({ ...prev, [qid]: text })); 
+    setAnswers((prev) => ({ ...prev, [qid]: text }));
+  };
+
+  const handleTextAtIndex = (qid: number, idx: number, text: string, expectedCount: number) => {
+    if (showAttempt) return;
+    setAnswers((prev) => {
+      const current = parseSubmittedTextAnswers(prev[qid], expectedCount);
+      const next = current.map((v, i) => (i === idx ? text : v));
+      return { ...prev, [qid]: next.join("\n") };
+    });
   };
 
   if (!Number.isFinite(numericId)) return <div>Invalid quiz</div>;
@@ -206,12 +240,12 @@ export default function QuizPage() {
 
       {!showAttempt && (
         <div className="text-sm text-muted-foreground">
-          {Object.keys(answers).length} / {quiz.questions.length} answered
+          {Object.keys(answers).length} / {questions.length} answered
         </div>
       )}
 
       <div className="space-y-6">
-        {quiz.questions.map((q, index) => {
+        {questions.map((q, index) => {
           const answer = answers[q.id];
           const isAnswered = answer !== undefined && answer !== "";
 
@@ -242,15 +276,37 @@ export default function QuizPage() {
                     );
                   })}
                 </div>
-              ) : shouldRenderAsIdentification(q) ? (
+              ) : shouldRenderAsTextAnswer(q) ? (
                 <div className="space-y-2">
-                  <Textarea
-                    placeholder={canEdit ? "Type your answer here..." : "Answer (view mode)"}
-                    value={typeof answer === "string" ? answer : ""}
-                    onChange={(e) => handleText(q.id, e.target.value)}
-                    disabled={!canEdit}
-                    className={`min-h-[100px] ${!canEdit ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                  />
+                  {(() => {
+                    const expectedAnswers = parseExpectedTextAnswers(q);
+                    if (expectedAnswers.length >= 2) {
+                      const submitted = parseSubmittedTextAnswers(answer, expectedAnswers.length);
+                      return (
+                        <div className="space-y-2">
+                          {submitted.map((value, idx) => (
+                            <Textarea
+                              key={idx}
+                              placeholder={canEdit ? `Answer ${idx + 1}` : `Answer ${idx + 1} (view mode)`}
+                              value={value}
+                              onChange={(e) => handleTextAtIndex(q.id, idx, e.target.value, expectedAnswers.length)}
+                              disabled={!canEdit}
+                              className={`min-h-[80px] ${!canEdit ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                            />
+                          ))}
+                        </div>
+                      );
+                    }
+                    return (
+                      <Textarea
+                        placeholder={canEdit ? "Type your answer here..." : "Answer (view mode)"}
+                        value={typeof answer === "string" ? answer : ""}
+                        onChange={(e) => handleText(q.id, e.target.value)}
+                        disabled={!canEdit}
+                        className={`min-h-[100px] ${!canEdit ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                      />
+                    );
+                  })()}
                   {isAnswered && canEdit && (
                     <p className="text-xs text-green-600">Answer saved</p>
                   )}
@@ -305,7 +361,7 @@ export default function QuizPage() {
           {finalScore !== null ? (
             <div className="text-3xl font-bold text-green-700">
               Your Score: {finalScore}
-              {quiz && ` / ${quiz.questions.length}`}
+              {quiz && ` / ${questions.length}`}
             </div>
           ) : (
             <div className="text-gray-700">

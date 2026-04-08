@@ -35,7 +35,7 @@ export default function AddQuestionsPage() {
 
   const [questionText, setQuestionText] = useState("");
   const [questionType, setQuestionType] = useState<QuestionType>("mcq");
-  const [correctText, setCorrectText] = useState("");
+  const [correctTexts, setCorrectTexts] = useState<string[]>([""]);
   const [choices, setChoices] = useState<QuizChoicePayload[]>([
     { text: "", is_correct: true },
     { text: "", is_correct: false },
@@ -48,7 +48,7 @@ export default function AddQuestionsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quiz", qid] });
       setQuestionText("");
-      setCorrectText("");
+      setCorrectTexts([""]);
       setChoices([
         { text: "", is_correct: true },
         { text: "", is_correct: false },
@@ -64,18 +64,18 @@ export default function AddQuestionsPage() {
     const payload: QuizQuestionPayload = {
       text: questionText.trim(),
       question_type: questionType,
-      correct_text: correctText,
+      correct_text: correctTexts.map((v) => v.trim()).filter(Boolean).join("\n"),
       choices: choices.map((c) => ({ ...c })),
     };
     if (questionType === "tf") {
-      const correctIsTrue = (correctText || "").toLowerCase() === "true";
+      const correctIsTrue = (correctTexts[0] || "").toLowerCase() === "true";
       payload.correct_text = correctIsTrue ? "True" : "False";
       payload.choices = [
         { text: "True", is_correct: correctIsTrue },
         { text: "False", is_correct: !correctIsTrue },
       ];
     }
-    if (questionType === "identification") {
+    if (questionType === "identification" || questionType === "enumeration") {
       payload.choices = [];
     }
     createQuestionMutation.mutate(payload);
@@ -127,6 +127,7 @@ export default function AddQuestionsPage() {
             >
               <option value="mcq">Multiple choice</option>
               <option value="identification">Identification</option>
+              <option value="enumeration">Enumeration</option>
               <option value="tf">True / False</option>
             </select>
           </div>
@@ -173,14 +174,29 @@ export default function AddQuestionsPage() {
               </Button>
             </div>
           )}
-          {questionType === "identification" && (
-            <div>
+          {(questionType === "identification" || questionType === "enumeration") && (
+            <div className="space-y-2">
               <Label>Correct answer</Label>
-              <Input
-                value={correctText}
-                onChange={(e) => setCorrectText(e.target.value)}
-                placeholder="e.g. 4"
-              />
+              {correctTexts.map((value, idx) => (
+                <Input
+                  key={idx}
+                  value={value}
+                  onChange={(e) =>
+                    setCorrectTexts((prev) =>
+                      prev.map((v, i) => (i === idx ? e.target.value : v))
+                    )
+                  }
+                  placeholder={`Answer ${idx + 1}`}
+                />
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setCorrectTexts((prev) => [...prev, ""])}
+              >
+                Add another answer
+              </Button>
             </div>
           )}
           {questionType === "tf" && (
@@ -188,9 +204,9 @@ export default function AddQuestionsPage() {
               <Label>Correct answer</Label>
               <select
                 className="h-9 rounded-md border border-input bg-background px-2"
-                value={(correctText || "True").toLowerCase()}
+                value={(correctTexts[0] || "True").toLowerCase()}
                 onChange={(e) =>
-                  setCorrectText(e.target.value === "true" ? "True" : "False")
+                  setCorrectTexts([e.target.value === "true" ? "True" : "False"])
                 }
               >
                 <option value="true">True</option>

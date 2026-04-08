@@ -17,6 +17,7 @@ import {
   enrollCourse,
   unenrollCourse,
   updateQuiz,
+  updateCourse,
 } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,21 @@ function TeacherDashboard() {
     onError: (err) => {
       console.error("Failed to delete course:", err);
       alert("Could not delete this course. Please try again.");
+    },
+  });
+
+  const toggleCourseMutation = useMutation({
+    mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) =>
+      updateCourse(id, { is_active }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      if (selectedCourseId) {
+        queryClient.invalidateQueries({ queryKey: ["quizzes", selectedCourseId] });
+      }
+    },
+    onError: (err) => {
+      console.error("Failed to update course status:", err);
+      alert("Could not update this course status. Please try again.");
     },
   });
 
@@ -190,7 +206,7 @@ function TeacherDashboard() {
             { text: "False", is_correct: !correctIsTrue },
           ];
         }
-        if (q.question_type === "identification") {
+        if (q.question_type === "identification" || q.question_type === "enumeration") {
           base.choices = [];
         }
 
@@ -299,18 +315,38 @@ function TeacherDashboard() {
                       {course.description}
                     </p>
                   )}
+                  {course.is_active === false && (
+                    <p className="text-xs text-amber-600">Deactivated</p>
+                  )}
                 </div>
-                <Button
-                  size="icon-xs"
-                  variant="ghost"
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteCourse(course);
-                  }}
-                >
-                  ✕
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCourseMutation.mutate({
+                        id: course.id,
+                        is_active: !(course.is_active ?? true),
+                      });
+                    }}
+                    disabled={toggleCourseMutation.isPending}
+                  >
+                    {(course.is_active ?? true) ? "Deactivate" : "Reactivate"}
+                  </Button>
+                  <Button
+                    size="icon-xs"
+                    variant="ghost"
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteCourse(course);
+                    }}
+                  >
+                    ✕
+                  </Button>
+                </div>
               </button>
             ))
           ) : (
@@ -484,6 +520,7 @@ function TeacherDashboard() {
                             <option value="identification">
                               Identification
                             </option>
+                            <option value="enumeration">Enumeration</option>
                             <option value="tf">True / False</option>
                           </select>
                         </div>
@@ -581,26 +618,62 @@ function TeacherDashboard() {
                           </div>
                         )}
 
-                        {question.question_type === "identification" && (
+                        {(question.question_type === "identification" || question.question_type === "enumeration") && (
                           <div className="grid gap-2">
                             <Label className="text-xs">
                               Correct answer (only visible to you)
                             </Label>
-                            <Input
-                              value={question.correct_text || ""}
-                              onChange={(e) => {
-                                const value = e.target.value;
+                            {((question.correct_text || "")
+                              .split("\n")
+                              .map((v) => v.trim())
+                              .filter(Boolean).length
+                              ? (question.correct_text || "").split("\n").map((v) => v.trim()).filter(Boolean)
+                              : [""]
+                            ).map((ans, aIdx, arr) => (
+                              <Input
+                                key={aIdx}
+                                value={ans}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setQuizQuestions((prev) =>
+                                    prev.map((q, idx) => {
+                                      if (idx !== qIndex) return q;
+                                      const list = (q.correct_text || "")
+                                        .split("\n")
+                                        .map((x) => x.trim())
+                                        .filter(Boolean);
+                                      const base = list.length ? list : [""];
+                                      const updated = base.map((x, i) => (i === aIdx ? value : x));
+                                      return { ...q, correct_text: updated.join("\n") };
+                                    })
+                                  );
+                                }}
+                                placeholder={`Answer ${aIdx + 1}`}
+                                required
+                              />
+                            ))}
+                            <Button
+                              type="button"
+                              size="xs"
+                              variant="outline"
+                              onClick={() => {
                                 setQuizQuestions((prev) =>
-                                  prev.map((q, idx) =>
-                                    idx === qIndex
-                                      ? { ...q, correct_text: value }
-                                      : q
-                                  )
+                                  prev.map((q, idx) => {
+                                    if (idx !== qIndex) return q;
+                                    const list = (q.correct_text || "")
+                                      .split("\n")
+                                      .map((x) => x.trim())
+                                      .filter(Boolean);
+                                    return {
+                                      ...q,
+                                      correct_text: [...(list.length ? list : [""]), ""].join("\n"),
+                                    };
+                                  })
                                 );
                               }}
-                              placeholder="e.g. 4"
-                              required
-                            />
+                            >
+                              Add another correct answer
+                            </Button>
                           </div>
                         )}
 

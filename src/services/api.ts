@@ -5,7 +5,7 @@ const API_BASE_URL = "/api";
 
 export type Role = "student" | "teacher";
 
-export type QuestionType = "identification" | "mcq" | "tf";
+export type QuestionType = "identification" | "enumeration" | "mcq" | "tf";
 
 export interface User {
   id: number;
@@ -35,6 +35,7 @@ export interface Course {
   id: number;
   title: string;
   description?: string;
+  is_active?: boolean;
   is_enrolled?: boolean;
   author?: number;
   author_name?: string;
@@ -198,7 +199,7 @@ export async function createCourse(
 
 export async function updateCourse(
   id: number,
-  payload: Partial<Pick<Course, "title" | "description">>
+  payload: Partial<Pick<Course, "title" | "description" | "is_active">>
 ): Promise<Course> {
   const { data } = await api.patch<Course>(`/courses/${id}/`, payload);
   return data;
@@ -255,6 +256,11 @@ export async function createQuestion(
   payload: QuizQuestionPayload
 ): Promise<unknown> {
   const { data } = await api.post(`/quizzes/${quizId}/questions/`, payload);
+  return data;
+}
+
+export async function fetchQuizQuestions(quizId: number): Promise<Question[]> {
+  const { data } = await api.get<Question[]>(`/quizzes/${quizId}/questions/`);
   return data;
 }
 

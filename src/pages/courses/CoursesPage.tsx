@@ -6,10 +6,10 @@ import {
   fetchTeacherCourses,
   fetchCourses,
   fetchEnrolledCourses,
-  fetchQuizzesForCourse,
   createCourse,
+  updateCourse,
+  deleteCourse,
   type Course,
-  type Quiz,
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +39,9 @@ export default function CoursesPage() {
   const { data: courses, isLoading } = useQuery({
     queryKey: ["courses", viewMode, isTeacher],
     queryFn: () => {
+      if (isTeacher) {
+        return fetchTeacherCourses();
+      }
       if (viewMode === "all") {
         return fetchCourses();
       }
@@ -52,34 +55,8 @@ export default function CoursesPage() {
   });
   const courseList = (courses ?? []) as Course[];
 
-  const handleViewCourse = async (courseId: number, isEnrolled: boolean) => {
-    try {
-      if (isTeacher) {
-        navigate(`/courses/${courseId}`);
-        return;
-      }
-
-      if (isEnrolled) {
-        navigate(`/courses/${courseId}`);
-        return;
-      }
-
-      const quizzes = await fetchQuizzesForCourse(courseId);
-      const asQuiz = quizzes as Quiz[];
-
-      const quizToView =
-        asQuiz.find((q) => !(q.has_attempted ?? false)) ?? asQuiz[0];
-
-      if (quizToView) {
-        navigate(`/quizview/${quizToView.id}`);
-        return;
-      }
-
-      navigate(`/courses/${courseId}`);
-    } catch (e) {
-      console.error("Failed to load quiz for course view:", e);
-      navigate(`/courses/${courseId}`);
-    }
+  const handleViewCourse = (courseId: number) => {
+    navigate(`/courses/${courseId}`);
   };
 
   const createCourseMutation = useMutation({
@@ -94,6 +71,27 @@ export default function CoursesPage() {
     },
     onError: () => {
       alert("Failed to create course.");
+    },
+  });
+
+  const deleteCourseMutation = useMutation({
+    mutationFn: (id: number) => deleteCourse(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+    onError: () => {
+      alert("Failed to delete course.");
+    },
+  });
+
+  const toggleCourseMutation = useMutation({
+    mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) =>
+      updateCourse(id, { is_active }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+    onError: () => {
+      alert("Failed to update course status.");
     },
   });
 
@@ -116,22 +114,24 @@ export default function CoursesPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Courses</h1>
-          <div className="mt-3 flex gap-2">
-            <Button
-              size="sm"
-              variant={viewMode === "all" ? "default" : "outline"}
-              onClick={() => setViewMode("all")}
-            >
-              All Courses
-            </Button>
-            <Button
-              size="sm"
-              variant={viewMode === "my" ? "default" : "outline"}
-              onClick={() => setViewMode("my")}
-            >
-              My Courses
-            </Button>
-          </div>
+          {!isTeacher && (
+            <div className="mt-3 flex gap-2">
+              <Button
+                size="sm"
+                variant={viewMode === "all" ? "default" : "outline"}
+                onClick={() => setViewMode("all")}
+              >
+                All Courses
+              </Button>
+              <Button
+                size="sm"
+                variant={viewMode === "my" ? "default" : "outline"}
+                onClick={() => setViewMode("my")}
+              >
+                My Courses
+              </Button>
+            </div>
+          )}
         </div>
         {isTeacher && (
           <Dialog open={openCreateCourse} onOpenChange={setOpenCreateCourse}>
@@ -198,17 +198,49 @@ export default function CoursesPage() {
                         {course.description}
                       </p>
                     )}
+                    {course.is_active === false && (
+                      <p className="text-xs text-amber-600 mt-1">Deactivated</p>
+                    )}
                   </div>
-                  <span className="text-primary text-sm font-medium">
-                    View →
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleCourseMutation.mutate({
+                          id: course.id,
+                          is_active: !(course.is_active ?? true),
+                        });
+                      }}
+                      disabled={toggleCourseMutation.isPending}
+                    >
+                      {(course.is_active ?? true) ? "Deactivate" : "Reactivate"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (confirm(`Delete course "${course.title}" and its quizzes?`)) {
+                          deleteCourseMutation.mutate(course.id);
+                        }
+                      }}
+                      disabled={deleteCourseMutation.isPending}
+                    >
+                      Delete
+                    </Button>
+                    <span className="text-primary text-sm font-medium">View →</span>
+                  </div>
                 </Link>
               ) : (
                 <button
                   key={course.id}
                   type="button"
                   className="flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:bg-muted/50 transition w-full text-left"
-                  onClick={() => handleViewCourse(course.id, course.is_enrolled ?? false)}
+                  onClick={() => handleViewCourse(course.id)}
                 >
                   <div>
                     <h2 className="font-semibold">{course.title}</h2>

@@ -75,6 +75,7 @@ function TeacherDashboard() {
   const [openCourseDialog, setOpenCourseDialog] = useState(false);
   const [courseTitle, setCourseTitle] = useState("");
   const [courseDescription, setCourseDescription] = useState("");
+  const [coursePasskey, setCoursePasskey] = useState("");
   const [openQuizDialog, setOpenQuizDialog] = useState(false);
   const [quizTitle, setQuizTitle] = useState("");
   const [quizDescription, setQuizDescription] = useState("");
@@ -89,6 +90,7 @@ function TeacherDashboard() {
       setOpenCourseDialog(false);
       setCourseTitle("");
       setCourseDescription("");
+      setCoursePasskey("");
     },
     onError: (err) => {
       console.error("Failed to create course:", err);
@@ -167,6 +169,7 @@ function TeacherDashboard() {
     await createCourseMutation.mutateAsync({
       title: courseTitle,
       description: courseDescription,
+      passkey: coursePasskey.trim() || undefined,
     });
   };
 
@@ -280,6 +283,17 @@ function TeacherDashboard() {
                     onChange={(e) => setCourseDescription(e.target.value)}
                     placeholder="What will students learn in this course?"
                     rows={3}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="course-passkey">Passkey (optional)</Label>
+                  <Input
+                    id="course-passkey"
+                    type="password"
+                    value={coursePasskey}
+                    onChange={(e) => setCoursePasskey(e.target.value)}
+                    placeholder="Enter a course passkey"
                   />
                 </div>
 
@@ -853,6 +867,9 @@ function TeacherDashboard() {
 function StudentDashboard() {
   const queryClient = useQueryClient();
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [openEnrollDialog, setOpenEnrollDialog] = useState(false);
+  const [selectedEnrollCourseId, setSelectedEnrollCourseId] = useState<number | null>(null);
+  const [enrollPasskey, setEnrollPasskey] = useState("");
 
   const { data: courses, isLoading } = useQuery({
     queryKey: ["courses"],
@@ -869,9 +886,17 @@ function StudentDashboard() {
   });
 
   const enrollMutation = useMutation({
-    mutationFn: enrollCourse,
+    mutationFn: ({ id, passkey }: { id: number; passkey?: string }) =>
+      enrollCourse(id, passkey),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
+      setOpenEnrollDialog(false);
+      setSelectedEnrollCourseId(null);
+      setEnrollPasskey("");
+    },
+    onError: (err) => {
+      console.error("Enroll failed", err);
+      alert("Unable to enroll. Please verify the passkey and try again.");
     },
   });
 
@@ -881,6 +906,20 @@ function StudentDashboard() {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
     },
   });
+
+  const selectedEnrollCourse = courses?.find(
+    (course) => course.id === selectedEnrollCourseId
+  );
+
+  const handleEnrollSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEnrollCourseId) return;
+
+    await enrollMutation.mutateAsync({
+      id: selectedEnrollCourseId,
+      passkey: enrollPasskey.trim() || undefined,
+    });
+  };
 
   const visibleQuizzes =
     selectedCourseId && quizzes
@@ -929,7 +968,8 @@ function StudentDashboard() {
                       if (enrolled) {
                         unenrollMutation.mutate(course.id);
                       } else {
-                        enrollMutation.mutate(course.id);
+                        setSelectedEnrollCourseId(course.id);
+                        setOpenEnrollDialog(true);
                       }
                     }}
                   >
@@ -945,6 +985,52 @@ function StudentDashboard() {
           </p>
         )}
       </section>
+
+      <Dialog open={openEnrollDialog} onOpenChange={(isOpen) => {
+        setOpenEnrollDialog(isOpen);
+        if (!isOpen) {
+          setSelectedEnrollCourseId(null);
+          setEnrollPasskey("");
+        }
+      }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Enter course passkey</DialogTitle>
+            <DialogDescription>
+              Provide the passkey for {selectedEnrollCourse?.title || "this course"} to enroll.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleEnrollSubmit} className="space-y-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="enroll-passkey">Passkey</Label>
+              <Input
+                id="enroll-passkey"
+                type="password"
+                value={enrollPasskey}
+                onChange={(e) => setEnrollPasskey(e.target.value)}
+                placeholder="Enter passkey if required"
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpenEnrollDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={enrollMutation.isPending}
+              >
+                {enrollMutation.isPending ? "Enrolling..." : "Enroll"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-2">

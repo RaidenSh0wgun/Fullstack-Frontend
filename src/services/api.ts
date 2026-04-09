@@ -37,6 +37,7 @@ export interface Course {
   is_enrolled?: boolean;
   author?: number;
   author_name?: string;
+  passkey?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -204,7 +205,7 @@ export async function fetchTeacherCourses(): Promise<Course[]> {
 }
 
 export async function createCourse(
-  payload: Pick<Course, "title" | "description">
+  payload: Pick<Course, "title" | "description" | "passkey">
 ): Promise<Course> {
   return request<Course>("/courses/", {
     method: "POST",
@@ -214,7 +215,7 @@ export async function createCourse(
 
 export async function updateCourse(
   id: number,
-  payload: Partial<Pick<Course, "title" | "description" | "is_active">>
+  payload: Partial<Pick<Course, "title" | "description" | "passkey" | "is_active">>
 ): Promise<Course> {
   return request<Course>(`/courses/${id}/`, {
     method: "PATCH",
@@ -226,8 +227,14 @@ export async function deleteCourse(id: number): Promise<void> {
   await request<void>(`/courses/${id}/`, { method: "DELETE" });
 }
 
-export async function enrollCourse(id: number): Promise<Course> {
-  return request<Course>(`/courses/${id}/enroll/`, { method: "POST" });
+export async function enrollCourse(
+  id: number,
+  passkey?: string
+): Promise<Course> {
+  return request<Course>(`/courses/${id}/enroll/`, {
+    method: "POST",
+    body: JSON.stringify({ passkey }),
+  });
 }
 
 export async function unenrollCourse(id: number): Promise<Course> {

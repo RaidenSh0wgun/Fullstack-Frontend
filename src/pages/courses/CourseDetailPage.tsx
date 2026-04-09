@@ -42,10 +42,16 @@ export default function CourseDetailPage() {
     enabled: Number.isInteger(id),
   });
   const enrollMutation = useMutation({
-    mutationFn: () => enrollCourse(id),
+    mutationFn: ({ passkey }: { passkey?: string }) => enrollCourse(id, passkey),
     onSuccess: () => {
       refetchCourse();
       queryClient.invalidateQueries({ queryKey: ["courses"] });
+      setOpenEnrollDialog(false);
+      setEnrollPasskey("");
+    },
+    onError: (err) => {
+      console.error("Enroll failed", err);
+      alert("Unable to enroll. Please verify the passkey and try again.");
     },
   });
   const unenrollMutation = useMutation({
@@ -70,6 +76,11 @@ export default function CourseDetailPage() {
     },
   });
 
+  const handleEnrollSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await enrollMutation.mutateAsync({ passkey: enrollPasskey.trim() || undefined });
+  };
+
   const { data: quizzes, isLoading } = useQuery({
     queryKey: ["quizzes", id],
     queryFn: () => fetchQuizzesForCourse(id),
@@ -77,6 +88,12 @@ export default function CourseDetailPage() {
   });
 
   const [openCreateQuiz, setOpenCreateQuiz] = useState(false);
+  const [openEnrollDialog, setOpenEnrollDialog] = useState(false);
+  const [enrollPasskey, setEnrollPasskey] = useState("");
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPasskey, setEditPasskey] = useState("");
   const [quizTitle, setQuizTitle] = useState("");
   const [quizDescription, setQuizDescription] = useState("");
   const [quizDuration, setQuizDuration] = useState("10");
@@ -106,6 +123,27 @@ export default function CourseDetailPage() {
     },
   });
 
+  const editCourseMutation = useMutation({
+    mutationFn: () =>
+      updateCourse(id, {
+        title: editTitle.trim(),
+        description: editDescription.trim() || undefined,
+        passkey: editPasskey.trim() || null,
+      }),
+    onSuccess: () => {
+      refetchCourse();
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      setOpenEditDialog(false);
+      setEditTitle("");
+      setEditDescription("");
+      setEditPasskey("");
+    },
+    onError: (err) => {
+      console.error("Edit course failed", err);
+      alert("Failed to update course. Please try again.");
+    },
+  });
+
   const handleCreateQuiz = (e: React.FormEvent) => {
     e.preventDefault();
     if (!Number.isInteger(id) || !quizTitle.trim()) return;
@@ -118,6 +156,19 @@ export default function CourseDetailPage() {
       questions: [],
     };
     createQuizMutation.mutate(payload);
+  };
+
+  const handleEditDialogOpen = () => {
+    setEditTitle(course?.title ?? "");
+    setEditDescription(course?.description ?? "");
+    setEditPasskey(course?.passkey ?? "");
+    setOpenEditDialog(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editTitle.trim()) return;
+    editCourseMutation.mutate();
   };
 
   if (!Number.isInteger(id)) {
@@ -167,6 +218,13 @@ export default function CourseDetailPage() {
             </Button>
             <Button
               size="sm"
+              variant="outline"
+              onClick={handleEditDialogOpen}
+            >
+              Edit course
+            </Button>
+            <Button
+              size="sm"
               variant="ghost"
               disabled={deleteCourseMutation.isPending}
               onClick={() => {
@@ -193,7 +251,7 @@ export default function CourseDetailPage() {
               <Button
                 size="sm"
                 disabled={enrollMutation.isPending}
-                onClick={() => enrollMutation.mutate()}
+                onClick={() => setOpenEnrollDialog(true)}
               >
                 Enroll
               </Button>
@@ -201,6 +259,104 @@ export default function CourseDetailPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={openEnrollDialog} onOpenChange={(isOpen) => {
+        setOpenEnrollDialog(isOpen);
+        if (!isOpen) {
+          setEnrollPasskey("");
+        }
+      }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Enter course passkey</DialogTitle>
+            <DialogDescription>
+              Provide the course passkey to enroll in {course?.title || "this course"}.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleEnrollSubmit} className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="detail-enroll-passkey">Passkey</Label>
+              <Input
+                id="detail-enroll-passkey"
+                type="password"
+                value={enrollPasskey}
+                onChange={(e) => setEnrollPasskey(e.target.value)}
+                placeholder="Enter passkey if required"
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpenEnrollDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={enrollMutation.isPending}>
+                {enrollMutation.isPending ? "Enrolling..." : "Enroll"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openEditDialog} onOpenChange={(isOpen) => {
+        setOpenEditDialog(isOpen);
+        if (!isOpen) {
+          setEditTitle("");
+          setEditDescription("");
+          setEditPasskey("");
+        }
+      }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit course</DialogTitle>
+            <DialogDescription>
+              Update the course name, description, and passkey.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleEditSubmit} className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="edit-course-title">Course name *</Label>
+              <Input
+                id="edit-course-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="e.g. Biology 101"
+                required
+                autoFocus
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-course-description">Description (optional)</Label>
+              <Textarea
+                id="edit-course-description"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                placeholder="Describe this course..."
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-course-passkey">Passkey (optional)</Label>
+              <Input
+                id="edit-course-passkey"
+                type="text"
+                value={editPasskey}
+                onChange={(e) => setEditPasskey(e.target.value)}
+                placeholder="Enter passkey or leave blank for no passkey"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpenEditDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={editCourseMutation.isPending || !editTitle.trim()}>
+                {editCourseMutation.isPending ? "Saving..." : "Save changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <section>
         <div className="flex items-center justify-between mb-4">

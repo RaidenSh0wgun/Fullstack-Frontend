@@ -33,6 +33,7 @@ export default function CoursesPage() {
   const [openCreateCourse, setOpenCreateCourse] = useState(false);
   const [courseTitle, setCourseTitle] = useState("");
   const [courseDescription, setCourseDescription] = useState("");
+  const [coursePasskey, setCoursePasskey] = useState("");
 
   const [viewMode, setViewMode] = useState<"all" | "my">("all");
 
@@ -60,12 +61,13 @@ export default function CoursesPage() {
   };
 
   const createCourseMutation = useMutation({
-    mutationFn: (payload: Pick<Course, "title" | "description">) =>
+    mutationFn: (payload: Pick<Course, "title" | "description" | "passkey">) =>
       createCourse(payload),
     onSuccess: () => {
       setOpenCreateCourse(false);
       setCourseTitle("");
       setCourseDescription("");
+      setCoursePasskey("");
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       queryClient.invalidateQueries({ queryKey: ["courses", true] });
     },
@@ -98,9 +100,10 @@ export default function CoursesPage() {
   const handleCreateCourse = (e: React.FormEvent) => {
     e.preventDefault();
     if (!courseTitle.trim()) return;
-    const payload: Pick<Course, "title" | "description"> = {
+    const payload: Pick<Course, "title" | "description" | "passkey"> = {
       title: courseTitle.trim(),
       description: courseDescription.trim() || undefined,
+      passkey: coursePasskey.trim() || undefined,
     };
     createCourseMutation.mutate(payload);
   };
@@ -162,6 +165,15 @@ export default function CoursesPage() {
                     onChange={(e) => setCourseDescription(e.target.value)}
                     placeholder="What is this course about?"
                     rows={2}
+                  />
+                </div>
+                <div>
+                  <Label>Passkey (optional)</Label>
+                  <Input
+                    type="password"
+                    value={coursePasskey}
+                    onChange={(e) => setCoursePasskey(e.target.value)}
+                    placeholder="Set a passkey for student enrollment"
                   />
                 </div>
                 <DialogFooter>

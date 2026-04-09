@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import type { Role } from "@/services/api";
 import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
@@ -16,7 +15,6 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("student");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +27,7 @@ export default function LoginPage() {
       if (mode === "login") {
         await login({ username, password });
       } else {
-        await register({ username, password, email, role });
+        await register({ username, password, email });
       }
 
       const redirectTo = location.state?.from?.pathname ?? "/";
@@ -67,7 +65,7 @@ export default function LoginPage() {
         <p className="mb-6 text-center text-sm text-muted-foreground">
           {mode === "login"
             ? "Sign in to your existing account."
-            : "Choose your role (student or teacher) and create an account."}
+            : "Create an account."}
         </p>
 
         <div className="mb-4 flex gap-2 rounded-lg bg-muted p-1">
@@ -97,24 +95,6 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === "register" && (
-            <div className="space-y-1 text-left">
-              <label className="text-sm font-medium" htmlFor="role">
-                Role
-              </label>
-
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value as Role)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-              >
-                <option value="student">Student</option>
-                <option value="teacher">Teacher</option>
-              </select>
-            </div>
-          )}
-
           <div className="space-y-1 text-left">
             <label className="text-sm font-medium" htmlFor="username">
               Username

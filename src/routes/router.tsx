@@ -10,6 +10,7 @@ import AddQuestionsPage from "@/pages/questions/AddQuestionsPage";
 import CalendarPage from "@/pages/calendar/CalendarPage";
 import StudentsPage from "@/pages/students/StudentsPage";
 import ScoresPage from "@/pages/scores/ScoresPage";
+import AdminPage from "@/pages/admin/AdminPage";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
 import EditQuizLayout from "@/pages/editTabs/EditQuizLayout";
@@ -89,6 +90,15 @@ export default function AppRouter() {
           element={
             <ProtectedRoute allowedRoles={["teacher"]}>
               <ScoresPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminPage />
             </ProtectedRoute>
           }
         />

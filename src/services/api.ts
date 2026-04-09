@@ -1,7 +1,7 @@
 const API_BASE_URL = "/api";
 
 
-export type Role = "student" | "teacher";
+export type Role = "student" | "teacher" | "admin";
 
 export type QuestionType = "identification" | "enumeration" | "mcq" | "tf";
 
@@ -26,7 +26,6 @@ export interface RegisterPayload {
   username: string;
   password: string;
   email?: string;
-  role: Role;
 }
 
 export interface Course {
@@ -182,7 +181,6 @@ export async function registerRequest(
     email: payload.email,
     password1: payload.password,
     password2: payload.password,
-    role: payload.role,
   };
 
   return request<AuthTokens>("/register/", {
@@ -421,5 +419,49 @@ export async function fetchCourses(): Promise<Course[]> {
 
 export async function fetchCourseDetail(id: number): Promise<Course> {
   return request<Course>(`/courses/${id}/detail/`);
+}
+
+export interface AdminManagedUser {
+  id: number;
+  username: string;
+  email?: string;
+  is_active: boolean;
+  role: Role;
+  full_name: string;
+}
+
+export async function fetchAdminUsers(params?: {
+  search?: string;
+  role?: "student" | "teacher" | "all";
+}): Promise<AdminManagedUser[]> {
+  const query = new URLSearchParams();
+  if (params?.search) {
+    query.set("search", params.search);
+  }
+  if (params?.role) {
+    query.set("role", params.role);
+  }
+  const qs = query.toString();
+  return request<AdminManagedUser[]>(`/admin/users/${qs ? `?${qs}` : ""}`);
+}
+
+export async function fetchAdminUserDetail(userId: number): Promise<AdminManagedUser> {
+  return request<AdminManagedUser>(`/admin/users/${userId}/`);
+}
+
+export async function updateAdminUser(
+  userId: number,
+  payload: Partial<Pick<AdminManagedUser, "username" | "full_name" | "is_active" | "role">> & {
+    password?: string;
+  }
+): Promise<AdminManagedUser> {
+  return request<AdminManagedUser>(`/admin/users/${userId}/`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteAdminUser(userId: number): Promise<void> {
+  await request<void>(`/admin/users/${userId}/`, { method: "DELETE" });
 }
 

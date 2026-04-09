@@ -19,6 +19,7 @@ import {
   Users,
   BarChart3,
   PanelLeft,
+  Shield,
 } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -54,22 +55,26 @@ export default function DashboardLayout() {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/courses")}>
-                  <Link to="/courses" className="flex items-center gap-3">
-                    <BookOpen size={18} />
-                    Courses
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/calendar")}>
-                  <Link to="/calendar" className="flex items-center gap-3">
-                    <Calendar size={18} />
-                    Calendar
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {user?.role !== "admin" && (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive("/courses")}>
+                      <Link to="/courses" className="flex items-center gap-3">
+                        <BookOpen size={18} />
+                        Courses
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive("/calendar")}>
+                      <Link to="/calendar" className="flex items-center gap-3">
+                        <Calendar size={18} />
+                        Calendar
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
               {user?.role === "teacher" && (
                 <>
                   <SidebarMenuItem>
@@ -89,6 +94,16 @@ export default function DashboardLayout() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </>
+              )}
+              {user?.role === "admin" && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/admin")}>
+                    <Link to="/admin" className="flex items-center gap-3">
+                      <Shield size={18} />
+                      Admin
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarContent>

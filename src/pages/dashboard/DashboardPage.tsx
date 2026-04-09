@@ -12,10 +12,28 @@ import { Button } from "@/components/ui/button";
 export default function DashboardPage() {
   const { user } = useAuth();
 
+  if (user?.role === "admin") {
+    return <AdminDashboard />;
+  }
+
   if (user?.role === "teacher") {
     return <InstructorDashboard />;
   }
   return <StudentDashboard />;
+}
+
+function AdminDashboard() {
+  return (
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      <p className="text-muted-foreground">
+        Manage student and teacher accounts from the Admin page.
+      </p>
+      <Link to="/admin" className="inline-block">
+        <Button size="sm">Open admin panel</Button>
+      </Link>
+    </div>
+  );
 }
 
 function InstructorDashboard() {

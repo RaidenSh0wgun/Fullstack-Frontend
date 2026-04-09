@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
-type Role = "student" | "teacher";
+type Role = "student" | "teacher" | "admin";
 
 export default function ProtectedRoute({
   children,

@@ -25,19 +25,19 @@ export default function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
 
       <Route
-        path="/quiz/:quizId"
+        path="/quizview/:quizId"
         element={
-          <ProtectedRoute allowedRoles={["student"]}>
-            <QuizPage />
+          <ProtectedRoute>
+            <QuizViewPage />
           </ProtectedRoute>
         }
       />
 
       <Route
-        path="/quizview/:quizId"
+        path="/quiz/:quizId"
         element={
-          <ProtectedRoute>
-            <QuizViewPage />
+          <ProtectedRoute allowedRoles={["student", "teacher"]}>
+            <QuizPage />
           </ProtectedRoute>
         }
       />

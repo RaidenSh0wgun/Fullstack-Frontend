@@ -50,6 +50,43 @@ function parseSubmittedTextAnswers(value: number | string | undefined, count: nu
   return normalized;
 }
 
+function isQuestionCorrect(
+  q: any,
+  answer: number | string | undefined,
+  qType: string
+): boolean | null {
+  if (answer === undefined || answer === "") return null;
+
+  if (qType === "identification" || qType === "enumeration") {
+    const correctText = (q?.correct_text || "").trim();
+    if (!correctText) return null;
+    
+    if (qType === "enumeration") {
+      const correctAnswers = correctText.split("\n").map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+      const submittedAnswers = typeof answer === "string" 
+        ? answer.split("\n").map((s: string) => s.trim().toLowerCase()).filter(Boolean)
+        : [];
+      if (correctAnswers.length === 0) return null;
+      const matchCount = submittedAnswers.filter((a: string) => correctAnswers.includes(a)).length;
+      return matchCount === correctAnswers.length;
+    } else {
+      return typeof answer === "string" && answer.trim().toLowerCase() === correctText.toLowerCase();
+    }
+  }
+
+  if (qType === "mcq" || qType === "tf") {
+    try {
+      const choices = Array.isArray(q?.choices) ? q.choices : [];
+      const selectedChoice = choices.find((c: any) => Number(c?.id) === Number(answer));
+      return selectedChoice?.is_correct ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
+}
+
 export default function QuizPage() {
   const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
@@ -109,7 +146,7 @@ export default function QuizPage() {
         setClientScore(correct);
       }
 
-      navigate(`/quizview/${numericId}`, { replace: true });
+      navigate(`/quiz/${numericId}?viewAttempt=true`, { replace: true });
     },
     onError: (error) => {
       console.error("Quiz submission failed:", error);
@@ -119,16 +156,27 @@ export default function QuizPage() {
   useEffect(() => {
     if (!showAttempt || !attempts?.length) return;
     const attempt = attempts[0];
+    console.log("Raw attempt data:", attempt);
     setSubmittedScore(attempt.score ?? null);
 
     const normalized: Record<number, number | string> = {};
-    Object.entries(attempt.answers ?? {}).forEach(([k, v]) => {
-      const id = Number(k);
-      if (!Number.isNaN(id)) {
-        normalized[id] = typeof v === "number" || typeof v === "string" ? v : "";
+    try {
+      const answersObj = attempt.answers;
+      console.log("Raw answers:", answersObj, typeof answersObj);
+      
+      if (answersObj && typeof answersObj === "object") {
+        Object.entries(answersObj).forEach(([k, v]) => {
+          const id = Number(k);
+          if (!Number.isNaN(id)) {
+            normalized[id] = typeof v === "number" || typeof v === "string" ? v : "";
+          }
+        });
       }
-    });
+    } catch (err) {
+      console.error("Error parsing attempt answers:", err);
+    }
     setAnswers(normalized);
+    console.log("Loaded attempt answers:", normalized);
   }, [showAttempt, attempts]);
 
   const durationSeconds = useMemo(
@@ -211,18 +259,47 @@ export default function QuizPage() {
 
   if (!Number.isFinite(numericId)) return <div>Invalid quiz</div>;
 
+  const isTimeUp = (timeLeft ?? 0) <= 0;
+  const canEdit = !isTimeUp && submittedScore === null && !showAttempt;
+  const hasSubmitted = submitMutation.isSuccess || submittedScore !== null || clientScore !== null;
+  const finalScore = submittedScore ?? clientScore;
+
+  // Compute per-question correctness for view mode
+  const questionCorrectness = useMemo(() => {
+    if (!showAttempt || !questions.length) return {};
+    const map: Record<number, boolean | null> = {};
+    try {
+      questions.forEach((q) => {
+        try {
+          const qType = (q as any)?.question_type as string;
+          const answer = answers[q.id];
+          map[q.id] = isQuestionCorrect(q, answer, qType);
+        } catch {
+          map[q.id] = null;
+        }
+      });
+    } catch {
+      console.error("Error computing question correctness");
+    }
+    return map;
+  }, [showAttempt, questions, answers]);
+
   if (isLoading || !quiz || (showAttempt && attemptsLoading)) {
     return <div className="flex min-h-[50vh] items-center justify-center">Loading quiz...</div>;
   }
 
-  const isTimeUp = (timeLeft ?? 0) <= 0;
-  const canEdit = !isTimeUp && submittedScore === null && !showAttempt;
-  const hasSubmitted = submitMutation.isSuccess || submittedScore !== null || clientScore !== null;
-
-  const finalScore = submittedScore ?? clientScore;
-
   return (
     <div className="space-y-6 p-4 max-w-4xl mx-auto">
+      <div className="flex items-center gap-4">
+        {quiz?.course && (
+          <button
+            onClick={() => navigate(`/courses/${quiz.course}`)}
+            className="text-sm text-muted-foreground hover:text-foreground transition"
+          >
+            ← Back to course
+          </button>
+        )}
+      </div>
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold">{quiz.title}</h1>
@@ -245,76 +322,186 @@ export default function QuizPage() {
         </div>
       )}
 
+      {showAttempt && finalScore !== null && (
+        <div className="rounded-xl border bg-card p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold">Quiz Results</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {questions.length} question{questions.length !== 1 ? "s" : ""} total
+              </p>
+            </div>
+            <div className="text-right">
+              <div className={`text-4xl font-bold ${
+                finalScore >= (questions.length * 0.7) ? "text-green-600" : "text-red-600"
+              }`}>
+                {finalScore} / {questions.length}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {Math.round((finalScore / questions.length) * 100)}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-6">
         {questions.map((q, index) => {
           const answer = answers[q.id];
           const isAnswered = answer !== undefined && answer !== "";
+          const qType = (q as any).question_type as string | undefined;
+          const isTextBased = qType === "identification" || qType === "enumeration";
+          const expectedAnswers = isTextBased ? parseExpectedTextAnswers(q) : [];
+          const expectedCount = qType === "enumeration" ? Math.max(1, expectedAnswers.length) : 1;
+          const isCorrect = questionCorrectness[q.id];
+          const cardBg = showAttempt && isCorrect === true 
+            ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800" 
+            : showAttempt && isCorrect === false 
+            ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
+            : "bg-card";
 
           return (
-            <div key={q.id} className="border rounded-lg p-5 bg-card shadow-sm">
-              <p className="font-medium mb-3">
-                Question {index + 1}: {q.text}
-              </p>
+            <div key={q.id} className={`border rounded-lg p-5 shadow-sm transition-colors ${cardBg}`}>
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <p className="font-medium">
+                  Question {index + 1}: {q.text}
+                  {isTextBased && (
+                    <span className="ml-2 text-xs text-muted-foreground capitalize">
+                      ({qType})
+                    </span>
+                  )}
+                </p>
+                {showAttempt && isCorrect !== null && (
+                  <span className={`shrink-0 text-xs font-medium px-2 py-1 rounded-full ${
+                    isCorrect 
+                      ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" 
+                      : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                  }`}>
+                    {isCorrect ? "✓ Correct" : "✗ Incorrect"}
+                  </span>
+                )}
+              </div>
 
-              {shouldRenderAsMultipleChoice(q) ? (
+              {isTextBased ? (
                 <div className="space-y-2">
-                  {(q as any).choices.map((ch: { id: number; text: string }) => {
-                    const selected = answer === ch.id;
-                    return (
-                      <button
-                        key={ch.id}
-                        type="button"
-                        disabled={!canEdit}
-                        onClick={() => handleChoice(q.id, ch.id)}
-                        className={`
-                          w-full text-left p-3 border rounded-md transition
-                          ${selected ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50"}
-                          ${!canEdit ? "opacity-60 cursor-not-allowed" : ""}
-                        `}
-                      >
-                        {ch.text}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : shouldRenderAsTextAnswer(q) ? (
-                <div className="space-y-2">
-                  {(() => {
-                    const qType = (q as any).question_type as string | undefined;
-                    const expectedAnswers =
-                      qType === "enumeration" ? parseExpectedTextAnswers(q) : [];
-                    const expectedCount =
-                      qType === "enumeration"
-                        ? Math.max(1, expectedAnswers.length)
-                        : 1;
-
-                    if (qType === "enumeration" && expectedCount >= 2) {
-                      const submitted = parseSubmittedTextAnswers(answer, expectedCount);
-                      return (
-                        <div className="space-y-2">
-                          {submitted.map((value, idx) => (
-                            <Textarea
-                              key={idx}
-                              placeholder={canEdit ? `Answer ${idx + 1}` : `Answer ${idx + 1} (view mode)`}
-                              value={value}
-                              onChange={(e) => handleTextAtIndex(q.id, idx, e.target.value, expectedCount)}
-                              disabled={!canEdit}
-                              className={`min-h-[80px] ${!canEdit ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                            />
-                          ))}
+                  {qType === "enumeration" && expectedCount >= 2 ? (
+                    <div className="space-y-2">
+                      {parseSubmittedTextAnswers(answer, expectedCount).map((value, idx) => (
+                        <div key={idx}>
+                          <Textarea
+                            placeholder={canEdit ? `Answer ${idx + 1}` : `Answer ${idx + 1} (view mode)`}
+                            value={value}
+                            onChange={(e) => handleTextAtIndex(q.id, idx, e.target.value, expectedCount)}
+                            disabled={!canEdit}
+                            className={`min-h-[80px] ${!canEdit ? "bg-background cursor-not-allowed" : ""}`}
+                          />
+                          {showAttempt && expectedAnswers[idx] && (
+                            <div className={`mt-1 px-3 py-2 rounded text-sm ${
+                              isCorrect 
+                                ? "text-green-700 dark:text-green-300" 
+                                : "text-red-700 dark:text-red-300"
+                            }`}>
+                              {isCorrect ? "✓" : "Expected:"} {expectedAnswers[idx]}
+                            </div>
+                          )}
                         </div>
-                      );
-                    }
-                    return (
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
                       <Textarea
                         placeholder={canEdit ? "Type your answer here..." : "Answer (view mode)"}
                         value={typeof answer === "string" ? answer : ""}
                         onChange={(e) => handleText(q.id, e.target.value)}
                         disabled={!canEdit}
-                        className={`min-h-[100px] ${!canEdit ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                        className={`min-h-[100px] ${!canEdit ? "bg-background cursor-not-allowed" : ""}`}
                       />
+                      {showAttempt && !canEdit && expectedAnswers[0] && (
+                        <div className={`mt-2 px-3 py-2 rounded text-sm ${
+                          isCorrect 
+                            ? "text-green-700 dark:text-green-300" 
+                            : "text-red-700 dark:text-red-300"
+                        }`}>
+                          {isCorrect ? "✓ Correct!" : `Correct answer: ${expectedAnswers[0]}`}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {isAnswered && canEdit && (
+                    <p className="text-xs text-green-600">Answer saved</p>
+                  )}
+                </div>
+              ) : shouldRenderAsMultipleChoice(q) ? (
+                <div className="space-y-2">
+                  {(() => {
+                    const showFeedback = showAttempt && !canEdit;
+                    return (
+                      <>
+                        {(q as any).choices.map((ch: { id: number; text: string; is_correct?: boolean }) => {
+                          const selected = answer === ch.id;
+                          const isCorrectChoice = ch.is_correct;
+
+                          let choiceStyle = "";
+                          if (showFeedback) {
+                            // Only highlight the student's chosen answer
+                            if (selected) {
+                              choiceStyle = isCorrectChoice
+                                ? "border-green-400 bg-green-50 dark:bg-green-950/20"
+                                : "border-red-400 bg-red-50 dark:bg-red-950/20";
+                            }
+                          } else if (selected) {
+                            choiceStyle = "border-blue-500 bg-blue-50";
+                          }
+
+                          if (canEdit) {
+                            return (
+                              <button
+                                key={ch.id}
+                                type="button"
+                                onClick={() => handleChoice(q.id, ch.id)}
+                                className={`w-full text-left p-3 border rounded-md transition ${choiceStyle || "border-border"}`}
+                              >
+                                {ch.text}
+                              </button>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={ch.id}
+                              className={`p-3 border rounded-md transition ${choiceStyle || "border-border"} ${
+                                !selected ? "opacity-50" : ""
+                              }`}
+                            >
+                              {ch.text}
+                            </div>
+                          );
+                        })}
+                        {showFeedback && (
+                          <div className={`mt-2 px-3 py-2 rounded text-sm ${
+                            isCorrect
+                              ? "text-green-700 dark:text-green-300"
+                              : "text-red-700 dark:text-red-300"
+                          }`}>
+                            {isCorrect ? "✓ Correct!" : (() => {
+                              const correctChoice = (q as any).choices?.find((c: any) => c.is_correct);
+                              return correctChoice ? `Correct answer: ${correctChoice.text}` : "";
+                            })()}
+                          </div>
+                        )}
+                      </>
                     );
                   })()}
+                </div>
+              ) : shouldRenderAsTextAnswer(q) ? (
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder={canEdit ? "Type your answer here..." : "Answer (view mode)"}
+                    value={typeof answer === "string" ? answer : ""}
+                    onChange={(e) => handleText(q.id, e.target.value)}
+                    disabled={!canEdit}
+                    className={`min-h-[100px] ${!canEdit ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  />
                   {isAnswered && canEdit && (
                     <p className="text-xs text-green-600">Answer saved</p>
                   )}
@@ -344,10 +531,14 @@ export default function QuizPage() {
               );
               if (!ok) return;
             }
-            navigate("/");
+            if (showAttempt && quiz?.course) {
+              navigate(`/courses/${quiz.course}`);
+            } else {
+              navigate("/");
+            }
           }}
         >
-          Back to dashboard
+          {showAttempt ? "Back to course" : "Back to dashboard"}
         </Button>
 
         {canEdit && (
@@ -359,26 +550,6 @@ export default function QuizPage() {
           </Button>
         )}
       </div>
-
-      {hasSubmitted && (
-        <div className="mt-8 rounded-lg border bg-green-50 p-6 text-center shadow-sm">
-          <h2 className="text-xl font-semibold text-green-800 mb-3">
-            Quiz Submitted Successfully!
-          </h2>
-
-          {finalScore !== null ? (
-            <div className="text-3xl font-bold text-green-700">
-              Your Score: {finalScore}
-              {quiz && ` / ${questions.length}`}
-            </div>
-          ) : (
-            <div className="text-gray-700">
-              <p>Submission received.</p>
-              <p className="text-sm mt-2">Score is being calculated...</p>
-            </div>
-          )}
-        </div>
-      )}
 
       {showAttempt && !hasSubmitted && (
         <div className="mt-8 rounded-lg border bg-card p-6 text-center">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -98,6 +98,29 @@ export default function CourseDetailPage() {
   const [quizDescription, setQuizDescription] = useState("");
   const [quizDuration, setQuizDuration] = useState("10");
   const [quizDueDate, setQuizDueDate] = useState("");
+  const [quizFilter, setQuizFilter] = useState<"all" | "completed" | "pending" | "dueDate">("all");
+  const [openUnenrollDialog, setOpenUnenrollDialog] = useState(false);
+
+  const filteredQuizzes = useMemo(() => {
+    if (!quizzes) return [];
+    let filtered = [...quizzes];
+
+    if (quizFilter === "completed") {
+      filtered = filtered.filter((q) => q.has_attempted);
+    } else if (quizFilter === "pending") {
+      filtered = filtered.filter((q) => !q.has_attempted);
+    } else if (quizFilter === "dueDate") {
+      filtered = filtered
+        .filter((q) => q.due_date)
+        .sort((a, b) => {
+          const dateA = new Date(a.due_date!).getTime();
+          const dateB = new Date(b.due_date!).getTime();
+          return dateA - dateB;
+        });
+    }
+
+    return filtered;
+  }, [quizzes, quizFilter]);
 
   const createQuizMutation = useMutation({
     mutationFn: (payload: QuizCreatePayload) => createQuiz(payload),
@@ -202,6 +225,11 @@ export default function CourseDetailPage() {
           {course?.description && (
             <p className="text-muted-foreground">{course.description}</p>
           )}
+          {course?.author_name && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Teacher: <span className="font-medium text-foreground">{course.author_name}</span>
+            </p>
+          )}
           {isTeacher && course?.is_active === false && (
             <p className="text-xs text-amber-600 mt-1">Deactivated</p>
           )}
@@ -243,7 +271,7 @@ export default function CourseDetailPage() {
                 size="sm"
                 variant="outline"
                 disabled={unenrollMutation.isPending}
-                onClick={() => unenrollMutation.mutate()}
+                onClick={() => setOpenUnenrollDialog(true)}
               >
                 Unenroll
               </Button>
@@ -295,6 +323,32 @@ export default function CourseDetailPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openUnenrollDialog} onOpenChange={setOpenUnenrollDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Unenroll from course</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to unenroll from "{course?.title}"? You will lose access to all quizzes and course materials.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenUnenrollDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={unenrollMutation.isPending}
+              onClick={() => {
+                unenrollMutation.mutate();
+                setOpenUnenrollDialog(false);
+              }}
+            >
+              {unenrollMutation.isPending ? "Unenrolling..." : "Unenroll"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -359,82 +413,101 @@ export default function CourseDetailPage() {
       </Dialog>
 
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
           <h2 className="text-lg font-semibold">Quizzes</h2>
-          {isTeacher && (
-            <Dialog open={openCreateQuiz} onOpenChange={setOpenCreateQuiz}>
-              <DialogTrigger asChild>
-                <Button size="sm">New quiz</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create quiz</DialogTitle>
-                  <DialogDescription>
-                    Create a quiz and add questions on the next page.
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleCreateQuiz} className="space-y-4">
-                  <div>
-                    <Label>Title *</Label>
-                    <Input
-                      value={quizTitle}
-                      onChange={(e) => setQuizTitle(e.target.value)}
-                      placeholder="e.g. Week 1 Quiz"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label>Description (optional)</Label>
-                    <Textarea
-                      value={quizDescription}
-                      onChange={(e) => setQuizDescription(e.target.value)}
-                      placeholder="What does this quiz cover?"
-                      rows={2}
-                    />
-                  </div>
-                  <div>
-                    <Label>Duration (minutes)</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={quizDuration}
-                      onChange={(e) => setQuizDuration(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label>Due date (optional, for calendar)</Label>
-                    <Input
-                      type="datetime-local"
-                      value={quizDueDate}
-                      onChange={(e) => setQuizDueDate(e.target.value)}
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setOpenCreateQuiz(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={createQuizMutation.isPending || !quizTitle.trim()}
-                    >
-                      Create and add questions
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {!isTeacher && (
+              <div className="flex items-center gap-1 rounded-lg border border-border p-1">
+                {(["all", "pending", "completed", "dueDate"] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setQuizFilter(filter)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+                      quizFilter === filter
+                        ? "bg-blue-500 text-white"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {filter === "all" ? "All" : filter === "pending" ? "Pending" : filter === "completed" ? "Completed" : "Due soon"}
+                  </button>
+                ))}
+              </div>
+            )}
+            {isTeacher && (
+              <Dialog open={openCreateQuiz} onOpenChange={setOpenCreateQuiz}>
+                <DialogTrigger asChild>
+                  <Button size="sm">New quiz</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create quiz</DialogTitle>
+                    <DialogDescription>
+                      Create a quiz and add questions on the next page.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateQuiz} className="space-y-4">
+                    <div>
+                      <Label>Title *</Label>
+                      <Input
+                        value={quizTitle}
+                        onChange={(e) => setQuizTitle(e.target.value)}
+                        placeholder="e.g. Week 1 Quiz"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label>Description (optional)</Label>
+                      <Textarea
+                        value={quizDescription}
+                        onChange={(e) => setQuizDescription(e.target.value)}
+                        placeholder="What does this quiz cover?"
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <Label>Duration (minutes)</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={quizDuration}
+                        onChange={(e) => setQuizDuration(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label>Due date (optional, for calendar)</Label>
+                      <Input
+                        type="datetime-local"
+                        value={quizDueDate}
+                        onChange={(e) => setQuizDueDate(e.target.value)}
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setOpenCreateQuiz(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={createQuizMutation.isPending || !quizTitle.trim()}
+                      >
+                        Create and add questions
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </div>
 
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading quizzes...</p>
-        ) : quizzes?.length ? (
+        ) : filteredQuizzes.length ? (
           <ul className="space-y-2">
-            {quizzes.map((quiz) => (
+            {filteredQuizzes.map((quiz) => (
               <QuizRow
                 key={quiz.id}
                 quiz={quiz}
@@ -447,8 +520,14 @@ export default function CourseDetailPage() {
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No quizzes in this course yet.
-            {isTeacher && " Create one above."}
+            {quizFilter === "all"
+              ? "No quizzes in this course yet."
+              : quizFilter === "completed"
+              ? "No completed quizzes."
+              : quizFilter === "pending"
+              ? "No pending quizzes."
+              : "No quizzes with due dates."}
+            {isTeacher && quizFilter === "all" && " Create one above."}
           </p>
         )}
       </section>
@@ -472,7 +551,11 @@ function QuizRow({
   const taken = quiz.has_attempted ?? false;
 
   return (
-    <li className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
+    <li className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
+      taken 
+        ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800" 
+        : "border-border bg-card"
+    }`}>
       <div>
         <p className="font-medium">{quiz.title}</p>
         <p className="text-xs text-muted-foreground">
@@ -492,7 +575,7 @@ function QuizRow({
             </Button>
           </>
         ) : isEnrolled ? (
-          <Link to={`/quizview/${quiz.id}`}>
+          <Link to={`/quiz/${quiz.id}${taken ? "?viewAttempt=true" : ""}`}>
             <Button size="sm">{taken ? "View attempt" : "Take quiz"}</Button>
           </Link>
         ) : (

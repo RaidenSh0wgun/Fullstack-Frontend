@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function EditQuizReviewAttemptPage() {
   const { courseId, quizId, attemptId } = useParams<{
@@ -34,7 +35,7 @@ export default function EditQuizReviewAttemptPage() {
     enabled: Number.isInteger(qid) && Number.isInteger(aid),
   });
 
-  const [answersDraft, setAnswersDraft] = useState<Record<string, number>>({});
+  const [answersDraft, setAnswersDraft] = useState<Record<string, number | string>>({});
   const [overrideDraft, setOverrideDraft] = useState<string>("");
 
   const hydrated = useMemo(() => {
@@ -44,7 +45,7 @@ export default function EditQuizReviewAttemptPage() {
 
   useEffect(() => {
     if (!attempt || hydrated) return;
-    setAnswersDraft((attempt.answers as Record<string, number>) ?? {});
+    setAnswersDraft((attempt.answers as Record<string, number | string>) ?? {});
     setOverrideDraft(
       attempt.score_override === null || attempt.score_override === undefined
         ? ""
@@ -53,11 +54,26 @@ export default function EditQuizReviewAttemptPage() {
   }, [attempt, hydrated]);
 
   const saveMutation = useMutation({
-    mutationFn: (payload: { answers: Record<string, number>; score_override: number | null }) =>
-      updateQuizAttempt(qid, aid, payload),
-    onSuccess: () => {
+    mutationFn: (payload: { answers: Record<string, number | string>; score_override: number | null }) => {
+      console.log("Sending payload to backend:", JSON.stringify(payload, null, 2));
+      return updateQuizAttempt(qid, aid, payload);
+    },
+    onSuccess: (data) => {
+      console.log("Save successful, response:", data);
+      // Update local state with returned data
+      if (data.score_override !== undefined && data.score_override !== null) {
+        setOverrideDraft(String(data.score_override));
+      }
+      if (data.answers) {
+        setAnswersDraft(data.answers as Record<string, number | string>);
+      }
       queryClient.invalidateQueries({ queryKey: ["quiz-attempt", qid, aid] });
       queryClient.invalidateQueries({ queryKey: ["quiz-attempts", qid] });
+    },
+    onError: (err: any) => {
+      console.error("Save failed:", err);
+      const errorMsg = err?.message || "Unknown error";
+      alert(`Failed to save changes: ${errorMsg}`);
     },
   });
 
@@ -79,9 +95,9 @@ export default function EditQuizReviewAttemptPage() {
     return <p className="text-sm text-muted-foreground">Quiz or submission not found.</p>;
   }
 
-  const effectiveScore = attempt.effective_score ?? attempt.score;
   const overrideValue =
     overrideDraft.trim() === "" ? null : Math.max(0, parseInt(overrideDraft, 10) || 0);
+  const effectiveScore = overrideValue !== null ? overrideValue : (attempt.effective_score ?? attempt.score);
 
   return (
     <div className="space-y-4">
@@ -140,7 +156,7 @@ export default function EditQuizReviewAttemptPage() {
             <Button
               variant="outline"
               onClick={() => {
-                setAnswersDraft((attempt.answers as Record<string, number>) ?? {});
+                setAnswersDraft((attempt.answers as Record<string, number | string>) ?? {});
                 setOverrideDraft(
                   attempt.score_override === null || attempt.score_override === undefined
                     ? ""
@@ -191,9 +207,31 @@ export default function EditQuizReviewAttemptPage() {
                       </label>
                     ))}
                   </div>
+                ) : q.question_type === "identification" || q.question_type === "enumeration" ? (
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Student's answer</Label>
+                      <Textarea
+                        value={typeof selected === "string" ? selected : ""}
+                        onChange={(e) =>
+                          setAnswersDraft((prev) => ({ ...prev, [String(q.id)]: e.target.value }))
+                        }
+                        disabled={saveMutation.isPending}
+                        placeholder="Student's text answer"
+                        rows={q.question_type === "enumeration" ? 4 : 2}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Correct answer(s)</Label>
+                      <div className="mt-1 rounded-md bg-muted px-3 py-2 text-sm">
+                        {(q as any).correct_text || "No correct answer set"}
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
-                    Identification review UI isn’t wired yet (your student quiz page currently submits only choice IDs).
+                    Unsupported question type
                   </p>
                 )}
               </div>

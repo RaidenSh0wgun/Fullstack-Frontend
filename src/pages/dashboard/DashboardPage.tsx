@@ -143,7 +143,7 @@ function StudentDashboard() {
                       </div>
                     )}
                   </div>
-                  <Link to={`/quizview/${q.id}`}>
+                  <Link to={`/quiz/${q.id}`}>
                     <Button size="sm">Take quiz</Button>
                   </Link>
                 </li>

@@ -105,7 +105,7 @@ export default function CalendarPage() {
               eventClick={(info) => {
                 const relatedQuizId = (info.event.extendedProps as any)?.relatedQuizId;
                 if (relatedQuizId) {
-                  navigate(`/quizview/${relatedQuizId}`);
+                  navigate(`/quiz/${relatedQuizId}`);
                   return;
                 }
 
@@ -135,7 +135,7 @@ export default function CalendarPage() {
                   e.related_quiz ? "cursor-pointer" : ""
                 }`}
                 onClick={() => {
-                  if (e.related_quiz) navigate(`/quizview/${e.related_quiz}`);
+                  if (e.related_quiz) navigate(`/quiz/${e.related_quiz}`);
                 }}
               >
                 <div className="min-w-[180px] text-sm text-muted-foreground">

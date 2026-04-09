@@ -279,9 +279,16 @@ export default function QuizPage() {
               ) : shouldRenderAsTextAnswer(q) ? (
                 <div className="space-y-2">
                   {(() => {
-                    const expectedAnswers = parseExpectedTextAnswers(q);
-                    if (expectedAnswers.length >= 2) {
-                      const submitted = parseSubmittedTextAnswers(answer, expectedAnswers.length);
+                    const qType = (q as any).question_type as string | undefined;
+                    const expectedAnswers =
+                      qType === "enumeration" ? parseExpectedTextAnswers(q) : [];
+                    const expectedCount =
+                      qType === "enumeration"
+                        ? Math.max(1, expectedAnswers.length)
+                        : 1;
+
+                    if (qType === "enumeration" && expectedCount >= 2) {
+                      const submitted = parseSubmittedTextAnswers(answer, expectedCount);
                       return (
                         <div className="space-y-2">
                           {submitted.map((value, idx) => (
@@ -289,7 +296,7 @@ export default function QuizPage() {
                               key={idx}
                               placeholder={canEdit ? `Answer ${idx + 1}` : `Answer ${idx + 1} (view mode)`}
                               value={value}
-                              onChange={(e) => handleTextAtIndex(q.id, idx, e.target.value, expectedAnswers.length)}
+                              onChange={(e) => handleTextAtIndex(q.id, idx, e.target.value, expectedCount)}
                               disabled={!canEdit}
                               className={`min-h-[80px] ${!canEdit ? "bg-gray-100 cursor-not-allowed" : ""}`}
                             />

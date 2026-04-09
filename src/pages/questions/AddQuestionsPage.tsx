@@ -123,7 +123,13 @@ export default function AddQuestionsPage() {
             <select
               className="h-9 rounded-md border border-input bg-background px-2 w-full"
               value={questionType}
-              onChange={(e) => setQuestionType(e.target.value as QuestionType)}
+              onChange={(e) => {
+                const next = e.target.value as QuestionType;
+                setQuestionType(next);
+                if (next === "identification") {
+                  setCorrectTexts((prev) => [prev[0] ?? ""]);
+                }
+              }}
             >
               <option value="mcq">Multiple choice</option>
               <option value="identification">Identification</option>
@@ -177,26 +183,48 @@ export default function AddQuestionsPage() {
           {(questionType === "identification" || questionType === "enumeration") && (
             <div className="space-y-2">
               <Label>Correct answer</Label>
-              {correctTexts.map((value, idx) => (
-                <Input
-                  key={idx}
-                  value={value}
-                  onChange={(e) =>
-                    setCorrectTexts((prev) =>
-                      prev.map((v, i) => (i === idx ? e.target.value : v))
-                    )
-                  }
-                  placeholder={`Answer ${idx + 1}`}
-                />
-              ))}
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setCorrectTexts((prev) => [...prev, ""])}
-              >
-                Add another answer
-              </Button>
+              {(questionType === "identification" ? correctTexts.slice(0, 1) : correctTexts).map(
+                (value, idx, arr) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Input
+                      value={value}
+                      onChange={(e) =>
+                        setCorrectTexts((prev) =>
+                          prev.map((v, i) => (i === idx ? e.target.value : v))
+                        )
+                      }
+                      placeholder={`Answer ${idx + 1}`}
+                    />
+                    {questionType === "enumeration" && (
+                      <Button
+                        type="button"
+                        size="icon-xs"
+                        variant="ghost"
+                        disabled={arr.length <= 1}
+                        onClick={() =>
+                          setCorrectTexts((prev) =>
+                            prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)
+                          )
+                        }
+                        aria-label={`Remove answer ${idx + 1}`}
+                        title="Remove"
+                      >
+                        ✕
+                      </Button>
+                    )}
+                  </div>
+                )
+              )}
+              {questionType === "enumeration" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setCorrectTexts((prev) => [...prev, ""])}
+                >
+                  Add another answer
+                </Button>
+              )}
             </div>
           )}
           {questionType === "tf" && (

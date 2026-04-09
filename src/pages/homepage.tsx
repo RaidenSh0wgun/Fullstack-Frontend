@@ -34,6 +34,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+function splitAnswers(raw: string | null | undefined): string[] {
+  const list = (raw || "")
+    .split("\n")
+    .map((v) => v.trim())
+    .filter(Boolean);
+  return list.length ? list : [""];
+}
+
 export default function Homepage() {
   const { user } = useAuth();
 
@@ -510,6 +518,10 @@ function TeacherDashboard() {
                                     ? {
                                         ...q,
                                         question_type: nextType,
+                                        correct_text:
+                                          nextType === "identification"
+                                            ? (splitAnswers(q.correct_text)[0] ?? "")
+                                            : q.correct_text,
                                       }
                                     : q
                                 )
@@ -623,57 +635,77 @@ function TeacherDashboard() {
                             <Label className="text-xs">
                               Correct answer (only visible to you)
                             </Label>
-                            {((question.correct_text || "")
-                              .split("\n")
-                              .map((v) => v.trim())
-                              .filter(Boolean).length
-                              ? (question.correct_text || "").split("\n").map((v) => v.trim()).filter(Boolean)
-                              : [""]
+                            {(question.question_type === "identification"
+                              ? splitAnswers(question.correct_text).slice(0, 1)
+                              : splitAnswers(question.correct_text)
                             ).map((ans, aIdx, arr) => (
-                              <Input
-                                key={aIdx}
-                                value={ans}
-                                onChange={(e) => {
-                                  const value = e.target.value;
+                              <div key={aIdx} className="flex items-center gap-2">
+                                <Input
+                                  value={ans}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setQuizQuestions((prev) =>
+                                      prev.map((q, idx) => {
+                                        if (idx !== qIndex) return q;
+                                        const base =
+                                          q.question_type === "identification"
+                                            ? [splitAnswers(q.correct_text)[0] ?? ""]
+                                            : splitAnswers(q.correct_text);
+                                        const updated = base.map((x, i) => (i === aIdx ? value : x));
+                                        return { ...q, correct_text: updated.join("\n") };
+                                      })
+                                    );
+                                  }}
+                                  placeholder={`Answer ${aIdx + 1}`}
+                                  required
+                                />
+                                {question.question_type === "enumeration" && (
+                                  <Button
+                                    type="button"
+                                    size="icon-xs"
+                                    variant="ghost"
+                                    disabled={arr.length <= 1}
+                                    onClick={() => {
+                                      setQuizQuestions((prev) =>
+                                        prev.map((q, idx) => {
+                                          if (idx !== qIndex) return q;
+                                          const base = splitAnswers(q.correct_text);
+                                          const next = base.length <= 1
+                                            ? base
+                                            : base.filter((_, i) => i !== aIdx);
+                                          return { ...q, correct_text: next.join("\n") };
+                                        })
+                                      );
+                                    }}
+                                    aria-label={`Remove answer ${aIdx + 1}`}
+                                    title="Remove"
+                                  >
+                                    ✕
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                            {question.question_type === "enumeration" && (
+                              <Button
+                                type="button"
+                                size="xs"
+                                variant="outline"
+                                onClick={() => {
                                   setQuizQuestions((prev) =>
                                     prev.map((q, idx) => {
                                       if (idx !== qIndex) return q;
-                                      const list = (q.correct_text || "")
-                                        .split("\n")
-                                        .map((x) => x.trim())
-                                        .filter(Boolean);
-                                      const base = list.length ? list : [""];
-                                      const updated = base.map((x, i) => (i === aIdx ? value : x));
-                                      return { ...q, correct_text: updated.join("\n") };
+                                      const base = splitAnswers(q.correct_text);
+                                      return {
+                                        ...q,
+                                        correct_text: [...base, ""].join("\n"),
+                                      };
                                     })
                                   );
                                 }}
-                                placeholder={`Answer ${aIdx + 1}`}
-                                required
-                              />
-                            ))}
-                            <Button
-                              type="button"
-                              size="xs"
-                              variant="outline"
-                              onClick={() => {
-                                setQuizQuestions((prev) =>
-                                  prev.map((q, idx) => {
-                                    if (idx !== qIndex) return q;
-                                    const list = (q.correct_text || "")
-                                      .split("\n")
-                                      .map((x) => x.trim())
-                                      .filter(Boolean);
-                                    return {
-                                      ...q,
-                                      correct_text: [...(list.length ? list : [""]), ""].join("\n"),
-                                    };
-                                  })
-                                );
-                              }}
-                            >
-                              Add another correct answer
-                            </Button>
+                              >
+                                Add another correct answer
+                              </Button>
+                            )}
                           </div>
                         )}
 

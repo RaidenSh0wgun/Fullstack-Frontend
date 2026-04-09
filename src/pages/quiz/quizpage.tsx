@@ -30,7 +30,8 @@ function shouldRenderAsTextAnswer(q: Question): boolean {
 
 function shouldRenderAsMultipleChoice(q: Question): boolean {
   const raw = q as any;
-  return Array.isArray(raw.choices) && raw.choices.length > 0;
+  const choices = Array.isArray(raw.choices) ? raw.choices : [];
+  return choices.length >= 2;
 }
 
 function parseExpectedTextAnswers(q: Question): string[] {

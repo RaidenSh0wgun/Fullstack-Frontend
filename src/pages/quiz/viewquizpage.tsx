@@ -10,7 +10,13 @@ function formatDate(dueDate: string | null | undefined): string | null {
   if (!dueDate) return null;
   const dt = new Date(dueDate);
   if (Number.isNaN(dt.getTime())) return null;
-  return dt.toLocaleString();
+  return dt.toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export default function ViewQuizPage() {
@@ -26,10 +32,17 @@ export default function ViewQuizPage() {
     enabled: Number.isFinite(numericId),
   });
 
-  if (!Number.isFinite(numericId)) return <div>Invalid quiz</div>;
+  if (!Number.isFinite(numericId)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-8 text-white">
+        <p className="text-slate-400">Invalid quiz</p>
+      </div>
+    );
+  }
+
   if (isLoading || !data) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 flex items-center justify-center text-white">
         Loading quiz...
       </div>
     );
@@ -44,55 +57,94 @@ export default function ViewQuizPage() {
   const dueLabel = formatDate(quiz.due_date);
 
   return (
-    <div className="space-y-6 p-4 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
+      <div className="max-w-4xl mx-auto space-y-10">
+        {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold">{quiz.title}</h1>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-yellow-400 transition-colors mb-4"
+          >
+            ← Back
+          </button>
+          <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            {quiz.title}
+          </h1>
           {quiz.description && (
-            <p className="text-muted-foreground">{quiz.description}</p>
+            <p className="text-slate-300 mt-4 text-lg max-w-2xl">{quiz.description}</p>
           )}
-          <div className="text-sm text-muted-foreground mt-2">
-            {quiz.duration_minutes} min
-            {dueLabel ? ` • Due ${dueLabel}` : ""}
-            {typeof quiz.question_count === "number"
-              ? ` • ${quiz.question_count} questions`
-              : ""}
+        </div>
+
+        {/* Quiz Info Card */}
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-slate-400">Duration</p>
+              <p className="text-2xl font-semibold text-white mt-1">
+                {quiz.duration_minutes} minutes
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-slate-400">Questions</p>
+              <p className="text-2xl font-semibold text-white mt-1">
+                {quiz.question_count ?? "—"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-widest text-slate-400">Due Date</p>
+              <p className="text-2xl font-semibold text-white mt-1">
+                {dueLabel || "No due date"}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {attempted ? (
-        <div className="mt-4 rounded-lg border bg-green-50 p-6 text-center shadow-sm">
-          <h2 className="text-xl font-semibold text-green-800 mb-3">
-            View score
-          </h2>
-          <div className="text-3xl font-bold text-green-700">
-            {attempt
-              ? `${attempt.effective_score ?? attempt.score} / ${attempt.total}`
-              : "Score unavailable"}
+        {/* Status Card */}
+        {attempted ? (
+          <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-3xl p-10 text-center shadow-xl">
+            <div className="w-16 h-16 mx-auto mb-6 bg-emerald-500/20 rounded-2xl flex items-center justify-center">
+              <span className="text-4xl">✅</span>
+            </div>
+            <h2 className="text-3xl font-bold text-emerald-400 mb-2">Quiz Completed</h2>
+            <div className="text-5xl font-black text-white mt-4">
+              {attempt
+                ? `${attempt.effective_score ?? attempt.score} / ${attempt.total}`
+                : "Score unavailable"}
+            </div>
+            <p className="text-emerald-300 mt-2">Well done!</p>
           </div>
-        </div>
-      ) : (
-        <div className="mt-4 rounded-lg border bg-card p-6 text-center shadow-sm">
-          <h2 className="text-xl font-semibold mb-3">Ready to start</h2>
-          <p className="text-muted-foreground">
-            Review the quiz details below, then take the quiz when you're ready.
-          </p>
-        </div>
-      )}
-
-      <div className="flex justify-between pt-4 gap-3">
-        <Button variant="outline" onClick={() => navigate("/")}>
-          Back to dashboard
-        </Button>
-
-        {isStudent && !attempted && (
-          <Button onClick={() => navigate(`/quiz/${quiz.id}`)}>
-            Take quiz
-          </Button>
+        ) : (
+          <div className="bg-slate-900/80 border border-slate-700/50 rounded-3xl p-10 text-center shadow-2xl">
+            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center">
+              <span className="text-4xl">📝</span>
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-3">Ready to Take the Quiz?</h2>
+            <p className="text-slate-400 max-w-md mx-auto">
+              Make sure you have enough time. The timer will start when you begin.
+            </p>
+          </div>
         )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate(-1)}
+            className="rounded-2xl border-slate-600 hover:bg-slate-800 px-8 py-6 text-lg"
+          >
+            Back
+          </Button>
+
+          {isStudent && !attempted && (
+            <Button
+              onClick={() => navigate(`/quiz/${quiz.id}`)}
+              className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-12 py-6 shadow-xl hover:brightness-110 text-lg"
+            >
+              Start Quiz Now
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-

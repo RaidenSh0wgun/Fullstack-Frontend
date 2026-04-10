@@ -61,7 +61,7 @@ function buildPayload(input: {
 }
 
 export default function EditQuizQuestionsTab() {
-  const { quizId } = useParams<{ courseId: string; quizId: string }>();
+  const { quizId } = useParams<{ quizId: string }>();
   const qid = quizId ? parseInt(quizId, 10) : NaN;
   const queryClient = useQueryClient();
 
@@ -110,32 +110,35 @@ export default function EditQuizQuestionsTab() {
   };
 
   if (!Number.isInteger(qid)) {
-    return <p className="text-sm text-muted-foreground">Invalid quiz.</p>;
+    return <p className="text-slate-400">Invalid quiz.</p>;
   }
 
   if (isLoading || !quiz) {
-    return <p className="text-sm text-muted-foreground">Loading questions...</p>;
+    return <p className="text-slate-400">Loading questions...</p>;
   }
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-xl border border-border bg-card p-4 space-y-4">
-        <h2 className="font-semibold">New question</h2>
-        <form onSubmit={handleAdd} className="space-y-4">
+    <div className="space-y-8">
+      {/* Add New Question Section */}
+      <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+        <h2 className="text-2xl font-bold text-white mb-6">Add New Question</h2>
+        
+        <form onSubmit={handleAdd} className="space-y-6">
           <div>
-            <Label>Question text *</Label>
+            <Label className="text-slate-200">Question Text *</Label>
             <Input
               value={newText}
               onChange={(e) => setNewText(e.target.value)}
               placeholder="e.g. What is 2 + 2?"
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-2"
               required
             />
           </div>
 
           <div>
-            <Label>Type</Label>
+            <Label className="text-slate-200">Question Type</Label>
             <select
-              className="h-9 rounded-md border border-input bg-background px-2 w-full"
+              className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
               value={newType}
               onChange={(e) => {
                 const next = e.target.value as QuestionType;
@@ -145,7 +148,7 @@ export default function EditQuizQuestionsTab() {
                 }
               }}
             >
-              <option value="mcq">Multiple choice</option>
+              <option value="mcq">Multiple Choice</option>
               <option value="identification">Identification</option>
               <option value="enumeration">Enumeration</option>
               <option value="tf">True / False</option>
@@ -153,10 +156,10 @@ export default function EditQuizQuestionsTab() {
           </div>
 
           {newType === "mcq" && (
-            <div className="space-y-2">
-              <Label>Choices (select correct)</Label>
+            <div className="space-y-3">
+              <Label className="text-slate-200">Choices (select the correct one)</Label>
               {newChoices.map((choice, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="flex items-center gap-3">
                   <input
                     type="radio"
                     name="new-correct"
@@ -166,6 +169,7 @@ export default function EditQuizQuestionsTab() {
                         prev.map((c, i) => ({ ...c, is_correct: i === idx }))
                       )
                     }
+                    className="accent-yellow-400"
                   />
                   <Input
                     value={choice.text}
@@ -175,6 +179,7 @@ export default function EditQuizQuestionsTab() {
                       )
                     }
                     placeholder={`Choice ${idx + 1}`}
+                    className="bg-slate-800 border-slate-600 rounded-2xl"
                   />
                 </div>
               ))}
@@ -185,18 +190,19 @@ export default function EditQuizQuestionsTab() {
                 onClick={() =>
                   setNewChoices((prev) => [...prev, { text: "", is_correct: false }])
                 }
+                className="rounded-2xl border-slate-600"
               >
-                Add choice
+                + Add Choice
               </Button>
             </div>
           )}
 
           {(newType === "identification" || newType === "enumeration") && (
-            <div className="space-y-2">
-              <Label>Correct answer</Label>
+            <div className="space-y-3">
+              <Label className="text-slate-200">Correct Answer{newType === "enumeration" ? "s" : ""}</Label>
               {(newType === "identification" ? newCorrectTexts.slice(0, 1) : newCorrectTexts).map(
                 (value, idx, arr) => (
-                  <div key={idx} className="flex items-center gap-2">
+                  <div key={idx} className="flex items-center gap-3">
                     <Input
                       value={value}
                       onChange={(e) =>
@@ -205,20 +211,20 @@ export default function EditQuizQuestionsTab() {
                         )
                       }
                       placeholder={`Answer ${idx + 1}`}
+                      className="bg-slate-800 border-slate-600 rounded-2xl"
                     />
                     {newType === "enumeration" && (
                       <Button
                         type="button"
-                        size="icon-xs"
                         variant="ghost"
+                        size="sm"
                         disabled={arr.length <= 1}
                         onClick={() =>
                           setNewCorrectTexts((prev) =>
                             prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)
                           )
                         }
-                        aria-label={`Remove answer ${idx + 1}`}
-                        title="Remove"
+                        className="text-red-400 hover:text-red-500"
                       >
                         ✕
                       </Button>
@@ -232,8 +238,9 @@ export default function EditQuizQuestionsTab() {
                   size="sm"
                   variant="outline"
                   onClick={() => setNewCorrectTexts((prev) => [...prev, ""])}
+                  className="rounded-2xl border-slate-600"
                 >
-                  Add another correct answer
+                  + Add Another Answer
                 </Button>
               )}
             </div>
@@ -241,9 +248,9 @@ export default function EditQuizQuestionsTab() {
 
           {newType === "tf" && (
             <div>
-              <Label>Correct answer</Label>
+              <Label className="text-slate-200">Correct Answer</Label>
               <select
-                className="h-9 rounded-md border border-input bg-background px-2"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
                 value={(newCorrectTexts[0] || "True").toLowerCase()}
                 onChange={(e) => setNewCorrectTexts([e.target.value === "true" ? "True" : "False"])}
               >
@@ -253,34 +260,39 @@ export default function EditQuizQuestionsTab() {
             </div>
           )}
 
-          <Button type="submit" disabled={createMutation.isPending || !newText.trim()}>
-            {createMutation.isPending ? "Adding..." : "Add question"}
+          <Button
+            type="submit"
+            disabled={createMutation.isPending || !newText.trim()}
+            className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-8 py-6 shadow-lg hover:brightness-110"
+          >
+            {createMutation.isPending ? "Adding Question..." : "Add Question"}
           </Button>
         </form>
-      </section>
+      </div>
 
-      <section className="space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="font-semibold">Questions ({quiz.questions?.length ?? 0})</h2>
-          <p className="text-xs text-muted-foreground">
-            Scroll inside the list to edit quickly.
-          </p>
+      {/* Existing Questions List */}
+      <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-white">
+            Questions ({quiz.questions?.length ?? 0})
+          </h2>
+          <p className="text-sm text-slate-400">Click Edit to modify any question</p>
         </div>
 
-        <div className="max-h-[60vh] overflow-auto rounded-xl border border-border bg-card">
+        <div className="max-h-[65vh] overflow-auto rounded-2xl border border-slate-700 bg-slate-950/50">
           {quiz.questions?.length ? (
-            <ul className="divide-y divide-border">
+            <div className="divide-y divide-slate-800">
               {quiz.questions.map((q) => (
                 <EditableQuestionRow key={q.id} question={q} quizId={qid} />
               ))}
-            </ul>
+            </div>
           ) : (
-            <div className="p-4">
-              <p className="text-sm text-muted-foreground">No questions yet. Add one above.</p>
+            <div className="p-12 text-center">
+              <p className="text-slate-400">No questions added yet.</p>
             </div>
           )}
         </div>
-      </section>
+      </div>
     </div>
   );
 }
@@ -295,11 +307,6 @@ function EditableQuestionRow({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
-  const initialChoices = useMemo<QuizChoicePayload[]>(
-    () => question.choices.map((c) => ({ text: c.text, is_correct: false })),
-    [question.choices]
-  );
-
   const [text, setText] = useState(question.text);
   const [type, setType] = useState<QuestionType>(question.question_type);
   const [correctTexts, setCorrectTexts] = useState<string[]>(() => {
@@ -311,8 +318,7 @@ function EditableQuestionRow({
     return question.question_type === "identification" ? normalized.slice(0, 1) : normalized;
   });
   const [choices, setChoices] = useState<QuizChoicePayload[]>(() => {
-    if (question.question_type !== "mcq") return initialChoices;
-    // We can’t see is_correct in read payload (write_only), so default to first option.
+    if (question.question_type !== "mcq") return [];
     return question.choices.map((c, idx) => ({ text: c.text, is_correct: idx === 0 }));
   });
 
@@ -343,16 +349,21 @@ function EditableQuestionRow({
   };
 
   return (
-    <li className="p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium truncate">{question.text}</p>
-          <p className="text-xs text-muted-foreground">
-            Type: {question.question_type.toUpperCase()}
+    <div className="p-6 hover:bg-slate-900/70 transition-colors">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-white text-[17px] leading-tight">{question.text}</p>
+          <p className="text-xs text-slate-500 mt-1">
+            {question.question_type.toUpperCase()}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => setOpen((v) => !v)}>
+        <div className="flex gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setOpen(!open)}
+            className="rounded-2xl border-slate-600"
+          >
             {open ? "Close" : "Edit"}
           </Button>
           <Button
@@ -362,6 +373,7 @@ function EditableQuestionRow({
               if (confirm("Delete this question?")) deleteMutation.mutate();
             }}
             disabled={deleteMutation.isPending}
+            className="text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-2xl"
           >
             Delete
           </Button>
@@ -369,16 +381,21 @@ function EditableQuestionRow({
       </div>
 
       {open && (
-        <div className="mt-4 space-y-4 rounded-lg border border-border bg-muted/20 p-3">
+        <div className="mt-6 p-6 bg-slate-900 border border-slate-700 rounded-2xl space-y-6">
           <div>
-            <Label>Question text *</Label>
-            <Input value={text} onChange={(e) => setText(e.target.value)} required />
+            <Label className="text-slate-200">Question Text *</Label>
+            <Input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2 focus:border-yellow-400"
+              required
+            />
           </div>
 
           <div>
-            <Label>Type</Label>
+            <Label className="text-slate-200">Question Type</Label>
             <select
-              className="h-9 rounded-md border border-input bg-background px-2 w-full"
+              className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
               value={type}
               onChange={(e) => {
                 const next = e.target.value as QuestionType;
@@ -388,7 +405,7 @@ function EditableQuestionRow({
                 }
               }}
             >
-              <option value="mcq">Multiple choice</option>
+              <option value="mcq">Multiple Choice</option>
               <option value="identification">Identification</option>
               <option value="enumeration">Enumeration</option>
               <option value="tf">True / False</option>
@@ -396,10 +413,10 @@ function EditableQuestionRow({
           </div>
 
           {type === "mcq" && (
-            <div className="space-y-2">
-              <Label>Choices (select correct)</Label>
+            <div className="space-y-3">
+              <Label className="text-slate-200">Choices</Label>
               {choices.map((choice, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="flex items-center gap-3">
                   <input
                     type="radio"
                     name={`correct-${question.id}`}
@@ -409,6 +426,7 @@ function EditableQuestionRow({
                         prev.map((c, i) => ({ ...c, is_correct: i === idx }))
                       )
                     }
+                    className="accent-yellow-400"
                   />
                   <Input
                     value={choice.text}
@@ -418,6 +436,7 @@ function EditableQuestionRow({
                       )
                     }
                     placeholder={`Choice ${idx + 1}`}
+                    className="bg-slate-800 border-slate-600 rounded-2xl"
                   />
                 </div>
               ))}
@@ -428,18 +447,19 @@ function EditableQuestionRow({
                 onClick={() =>
                   setChoices((prev) => [...prev, { text: "", is_correct: false }])
                 }
+                className="rounded-2xl border-slate-600"
               >
-                Add choice
+                + Add Choice
               </Button>
             </div>
           )}
 
           {(type === "identification" || type === "enumeration") && (
-            <div className="space-y-2">
-              <Label>Correct answer</Label>
+            <div className="space-y-3">
+              <Label className="text-slate-200">Correct Answer{type === "enumeration" ? "s" : ""}</Label>
               {(type === "identification" ? correctTexts.slice(0, 1) : correctTexts).map(
                 (value, idx, arr) => (
-                  <div key={idx} className="flex items-center gap-2">
+                  <div key={idx} className="flex items-center gap-3">
                     <Input
                       value={value}
                       onChange={(e) =>
@@ -448,20 +468,19 @@ function EditableQuestionRow({
                         )
                       }
                       placeholder={`Answer ${idx + 1}`}
+                      className="bg-slate-800 border-slate-600 rounded-2xl"
                     />
-                    {type === "enumeration" && (
+                    {type === "enumeration" && arr.length > 1 && (
                       <Button
                         type="button"
-                        size="icon-xs"
                         variant="ghost"
-                        disabled={arr.length <= 1}
+                        size="sm"
                         onClick={() =>
                           setCorrectTexts((prev) =>
                             prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx)
                           )
                         }
-                        aria-label={`Remove answer ${idx + 1}`}
-                        title="Remove"
+                        className="text-red-400 hover:text-red-500"
                       >
                         ✕
                       </Button>
@@ -475,8 +494,9 @@ function EditableQuestionRow({
                   size="sm"
                   variant="outline"
                   onClick={() => setCorrectTexts((prev) => [...prev, ""])}
+                  className="rounded-2xl border-slate-600"
                 >
-                  Add another correct answer
+                  + Add Another Answer
                 </Button>
               )}
             </div>
@@ -484,9 +504,9 @@ function EditableQuestionRow({
 
           {type === "tf" && (
             <div>
-              <Label>Correct answer</Label>
+              <Label className="text-slate-200">Correct Answer</Label>
               <select
-                className="h-9 rounded-md border border-input bg-background px-2"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
                 value={(correctTexts[0] || "True").toLowerCase()}
                 onChange={(e) => setCorrectTexts([e.target.value === "true" ? "True" : "False"])}
               >
@@ -496,26 +516,25 @@ function EditableQuestionRow({
             </div>
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex gap-3 pt-4">
             <Button
-              size="sm"
               onClick={handleSave}
               disabled={updateMutation.isPending || !text.trim()}
+              className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-8"
             >
-              {updateMutation.isPending ? "Saving..." : "Save changes"}
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
             <Button
-              size="sm"
               variant="outline"
               onClick={() => setOpen(false)}
               disabled={updateMutation.isPending}
+              className="rounded-2xl border-slate-600"
             >
               Cancel
             </Button>
           </div>
         </div>
       )}
-    </li>
+    </div>
   );
 }
-

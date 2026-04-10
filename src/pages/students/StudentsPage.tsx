@@ -9,6 +9,7 @@ export default function StudentsPage() {
     queryKey: ["courses"],
     queryFn: fetchTeacherCourses,
   });
+
   const { data: students, isLoading } = useQuery({
     queryKey: ["course-students", selectedCourseId],
     queryFn: () => fetchCourseStudents(selectedCourseId!),
@@ -16,76 +17,93 @@ export default function StudentsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Students</h1>
-      <p className="text-muted-foreground">
-        Select a course to see enrolled students.
-      </p>
-      <div className="grid gap-6 md:grid-cols-[1fr,1.5fr]">
-        <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-semibold mb-3">Your courses</h2>
-          {courses?.length ? (
-            <ul className="space-y-2">
-              {courses.map((c) => (
-                <li key={c.id}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
+      <div className="max-w-6xl mx-auto space-y-10">
+        {/* Header */}
+        <div>
+          <h1 className="text-5xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            Students
+          </h1>
+          <p className="text-xl text-slate-400 mt-3">
+            Manage enrolled students across your courses
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-[1fr,1.6fr]">
+          {/* Courses Sidebar */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50 h-fit">
+            <h2 className="text-2xl font-bold text-white mb-6">Your Courses</h2>
+
+            {courses?.length ? (
+              <div className="space-y-2">
+                {courses.map((course) => (
                   <button
+                    key={course.id}
                     type="button"
-                    onClick={() => setSelectedCourseId(c.id)}
-                    className={`w-full text-left rounded-lg px-3 py-2 text-sm font-medium transition ${
-                      selectedCourseId === c.id
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
+                    onClick={() => setSelectedCourseId(course.id)}
+                    className={`w-full text-left px-6 py-5 rounded-2xl transition-all text-lg font-medium ${
+                      selectedCourseId === course.id
+                        ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-lg"
+                        : "bg-slate-800 hover:bg-slate-700 text-slate-200"
                     }`}
                   >
-                    {c.title}
+                    {course.title}
                   </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">No courses.</p>
-          )}
-        </section>
-        <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-semibold mb-3">
-            Enrolled students
-            {selectedCourseId && courses && (
-              <span className="text-muted-foreground font-normal">
-                {" "}
-                — {courses.find((c) => c.id === selectedCourseId)?.title}
-              </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-400 py-12 text-center">You have no courses yet.</p>
             )}
-          </h2>
-          {selectedCourseId === null ? (
-            <p className="text-sm text-muted-foreground">
-              Select a course from the list.
-            </p>
-          ) : isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : students?.length ? (
-            <ul className="space-y-2">
-              {students.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
-                >
-                  <div>
-                    <span className="font-medium">
-                      {s.full_name || s.username}
-                    </span>
-                    <span className="text-muted-foreground text-sm ml-2">
-                      @{s.username} · {s.student_id}
-                    </span>
+          </div>
+
+          {/* Students List */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-white">Enrolled Students</h2>
+              {selectedCourseId && courses && (
+                <p className="text-slate-400 text-sm">
+                  {courses.find((c) => c.id === selectedCourseId)?.title}
+                </p>
+              )}
+            </div>
+
+            {selectedCourseId === null ? (
+              <div className="text-center py-20 text-slate-400">
+                Select a course from the left to see enrolled students
+              </div>
+            ) : isLoading ? (
+              <div className="text-center py-20 text-slate-400">Loading students...</div>
+            ) : students?.length ? (
+              <div className="space-y-3">
+                {students.map((student) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between bg-slate-950 border border-slate-700 hover:border-yellow-400/30 rounded-2xl px-8 py-6 transition-all"
+                  >
+                    <div>
+                      <p className="font-semibold text-white text-lg">
+                        {student.full_name || student.username}
+                      </p>
+                      <p className="text-slate-400 text-sm">
+                        @{student.username} • {student.student_id || "No ID"}
+                      </p>
+                    </div>
+                    <div className="text-xs uppercase tracking-widest text-emerald-400 font-medium">
+                      Enrolled
+                    </div>
                   </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No students enrolled in this course.
-            </p>
-          )}
-        </section>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20">
+                <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center">
+                  <span className="text-4xl opacity-40">👥</span>
+                </div>
+                <p className="text-slate-400">No students enrolled in this course yet.</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -34,7 +34,6 @@ export default function LoginPage() {
       navigate(redirectTo, { replace: true });
 
     } catch (err: unknown) {
-
       let message =
         "Something went wrong. Please check your details and try again.";
 
@@ -49,44 +48,54 @@ export default function LoginPage() {
       }
 
       setError(message);
-
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-sm">
-        <h1 className="mb-1 text-center text-2xl font-semibold">
-          {mode === "login" ? "Login" : "Register"}
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-red-950/20 to-slate-950 flex items-center justify-center p-4 sm:p-6">
+      {/* Slightly wider: max-w-md (448px) - perfect balance */}
+      <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-slate-900/95 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-red-500/20">
+        {/* Compact header */}
+        <div className="mb-6 text-center">
+          <div className="mx-auto mb-3 w-12 h-12 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+            <span className="text-2xl">🕒</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent leading-tight">
+            QUIZ TIME
+          </h1>
+        </div>
 
-        <p className="mb-6 text-center text-sm text-muted-foreground">
+        <h2 className="mb-1 text-center text-xl sm:text-2xl font-semibold text-white">
+          {mode === "login" ? "Login" : "Register"}
+        </h2>
+
+        <p className="mb-5 text-center text-xs sm:text-sm text-slate-400">
           {mode === "login"
             ? "Sign in to your existing account."
             : "Create an account."}
         </p>
 
-        <div className="mb-4 flex gap-2 rounded-lg bg-muted p-1">
+        {/* Compact mode toggle */}
+        <div className="mb-5 flex gap-1.5 sm:gap-2 rounded-xl bg-slate-800/50 p-0.5 sm:p-1 border border-red-500/20">
           <button
             type="button"
-            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
+            className={`flex-1 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all ${
               mode === "login"
-                ? "bg-background shadow-sm"
-                : "text-muted-foreground"
+                ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-sm"
+                : "text-slate-400 hover:text-slate-200"
             }`}
             onClick={() => setMode("login")}
           >
             Login
           </button>
-
           <button
             type="button"
-            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${
+            className={`flex-1 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all ${
               mode === "register"
-                ? "bg-background shadow-sm"
-                : "text-muted-foreground"
+                ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-sm"
+                : "text-slate-400 hover:text-slate-200"
             }`}
             onClick={() => setMode("register")}
           >
@@ -94,12 +103,11 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div className="space-y-1 text-left">
-            <label className="text-sm font-medium" htmlFor="username">
+            <label className="text-xs sm:text-sm font-medium text-slate-300" htmlFor="username">
               Username
             </label>
-
             <input
               id="username"
               type="text"
@@ -107,32 +115,30 @@ export default function LoginPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              className="w-full rounded-xl border border-red-500/30 bg-slate-800/50 px-3 py-2.5 sm:py-3 text-sm text-white outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50 transition-all"
             />
           </div>
 
           {mode === "register" && (
             <div className="space-y-1 text-left">
-              <label className="text-sm font-medium" htmlFor="email">
+              <label className="text-xs sm:text-sm font-medium text-slate-300" htmlFor="email">
                 Email
               </label>
-
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                className="w-full rounded-xl border border-red-500/30 bg-slate-800/50 px-3 py-2.5 sm:py-3 text-sm text-white outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50 transition-all"
               />
             </div>
           )}
 
           <div className="space-y-1 text-left">
-            <label className="text-sm font-medium" htmlFor="password">
+            <label className="text-xs sm:text-sm font-medium text-slate-300" htmlFor="password">
               Password
             </label>
-
             <input
               id="password"
               type="password"
@@ -142,21 +148,20 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              className="w-full rounded-xl border border-red-500/30 bg-slate-800/50 px-3 py-2.5 sm:py-3 text-sm text-white outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50 transition-all"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-destructive" aria-live="polite">
+            <p className="text-xs sm:text-sm text-red-400 px-2 py-1.5 bg-red-500/10 rounded-lg" aria-live="polite">
               {error}
             </p>
           )}
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full h-11 sm:h-12 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 hover:from-red-600 hover:via-yellow-600 hover:to-orange-600 text-white font-bold rounded-xl shadow-lg transition-all"
             disabled={loading}
-            variant="default"
           >
             {loading
               ? mode === "login"

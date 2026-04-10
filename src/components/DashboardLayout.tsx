@@ -6,7 +6,7 @@ import {
   SidebarContent,
   SidebarHeader,
   SidebarFooter,
-  SidebarMenu,
+  SidebarMenu,  
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarTrigger,
@@ -33,41 +33,45 @@ export default function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <Sidebar>
-          <SidebarHeader className="px-4 py-4">
+      <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950">
+        {/* Sidebar */}
+        <Sidebar className="border-r border-slate-700 bg-slate-900/95 backdrop-blur-xl">
+          <SidebarHeader className="px-5 py-5 border-b border-slate-700">
             <Link to="/" className="flex items-center gap-3">
-              <img
-                src="/src/assets/quiz_logo.png"
-                alt="Quiz App"
-                className="h-9 w-9 rounded-md"
-              />
-              <span className="font-semibold text-lg">Quiz App</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+                <span className="text-white text-xl font-bold">Q</span>
+              </div>
+              <span className="font-black text-2xl bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-black/0">   
+                QuizApp
+              </span>
             </Link>
           </SidebarHeader>
-          <SidebarContent className="px-2">
+
+          <SidebarContent className="px-3 py-5">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/")}>
-                  <Link to="/" className="flex items-center gap-3">
+                  <Link to="/" className="flex items-center gap-3 text-sm">
                     <LayoutDashboard size={18} />
                     Dashboard
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
               {user?.role !== "admin" && (
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/courses")}>
-                      <Link to="/courses" className="flex items-center gap-3">
+                      <Link to="/courses" className="flex items-center gap-3 text-sm">
                         <BookOpen size={18} />
                         Courses
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/calendar")}>
-                      <Link to="/calendar" className="flex items-center gap-3">
+                      <Link to="/calendar" className="flex items-center gap-3 text-sm">
                         <Calendar size={18} />
                         Calendar
                       </Link>
@@ -75,19 +79,21 @@ export default function DashboardLayout() {
                   </SidebarMenuItem>
                 </>
               )}
+
               {user?.role === "teacher" && (
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/students")}>
-                      <Link to="/students" className="flex items-center gap-3">
+                      <Link to="/students" className="flex items-center gap-3 text-sm">
                         <Users size={18} />
                         Students
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/scores")}>
-                      <Link to="/scores" className="flex items-center gap-3">
+                      <Link to="/scores" className="flex items-center gap-3 text-sm">
                         <BarChart3 size={18} />
                         Quiz Scores
                       </Link>
@@ -95,37 +101,50 @@ export default function DashboardLayout() {
                   </SidebarMenuItem>
                 </>
               )}
+
               {user?.role === "admin" && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={isActive("/admin")}>
-                    <Link to="/admin" className="flex items-center gap-3">
+                    <Link to="/admin" className="flex items-center gap-3 text-sm">
                       <Shield size={18} />
-                      Admin
+                      Admin Panel
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="px-4 py-4 space-y-2">
-            <div className="text-sm text-muted-foreground">
-              {user?.username} ({user?.role})
+
+          <SidebarFooter className="p-5 border-t border-slate-700 mt-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                {user?.username?.[0]?.toUpperCase() || "U"}
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-white text-sm truncate">{user?.username}</p>
+                <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
+              </div>
             </div>
+
             <button
               onClick={logout}
-              className="w-full rounded-md border px-3 py-2 text-sm hover:bg-muted transition"
+              className="w-full rounded-xl border border-slate-600 hover:bg-slate-800 hover:border-slate-500 transition py-2.5 text-sm font-medium text-slate-300 hover:text-white"
             >
               Logout
             </button>
           </SidebarFooter>
         </Sidebar>
-        <div className="flex flex-col flex-1">
-          <div className="h-14 flex items-center border-b px-4 mb-4">
-            <SidebarTrigger>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 border-b border-slate-700 bg-slate-900/80 backdrop-blur-xl flex items-center px-4 md:px-6 z-10">
+            <SidebarTrigger className="mr-3 text-slate-400 hover:text-white">
               <PanelLeft size={20} />
             </SidebarTrigger>
-          </div>
-          <main className="flex-1 px-6 pb-6">
+            <div className="flex-1" />
+          </header>
+
+          <main className="flex-1 overflow-auto p-4 md:p-6">
             <Outlet />
           </main>
         </div>

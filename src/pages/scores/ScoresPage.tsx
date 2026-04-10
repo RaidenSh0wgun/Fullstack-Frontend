@@ -14,11 +14,13 @@ export default function ScoresPage() {
     queryKey: ["courses"],
     queryFn: fetchTeacherCourses,
   });
+
   const { data: quizzes } = useQuery({
     queryKey: ["quizzes", selectedCourseId],
     queryFn: () => fetchQuizzesForCourse(selectedCourseId!),
     enabled: selectedCourseId !== null,
   });
+
   const { data: attempts, isLoading } = useQuery({
     queryKey: ["quiz-attempts", selectedQuizId],
     queryFn: () => fetchQuizAttempts(selectedQuizId!),
@@ -26,99 +28,121 @@ export default function ScoresPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Quiz scores</h1>
-      <p className="text-muted-foreground">
-        Select a course, then a quiz, to see student scores.
-      </p>
-      <div className="grid gap-6 md:grid-cols-3">
-        <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-semibold mb-3">Course</h2>
-          {courses?.length ? (
-            <ul className="space-y-2">
-              {courses.map((c) => (
-                <li key={c.id}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
+      <div className="max-w-6xl mx-auto space-y-10">
+        {/* Header */}
+        <div>
+          <h1 className="text-5xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            Quiz Scores
+          </h1>
+          <p className="text-xl text-slate-400 mt-3">
+            View student performance across your courses
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Courses Column */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+            <h2 className="text-2xl font-bold text-white mb-6">Courses</h2>
+            
+            {courses?.length ? (
+              <div className="space-y-2">
+                {courses.map((c) => (
                   <button
+                    key={c.id}
                     type="button"
                     onClick={() => {
                       setSelectedCourseId(c.id);
                       setSelectedQuizId(null);
                     }}
-                    className={`w-full text-left rounded-lg px-3 py-2 text-sm font-medium transition ${
+                    className={`w-full text-left px-6 py-4 rounded-2xl transition-all text-lg font-medium ${
                       selectedCourseId === c.id
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
+                        ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-lg"
+                        : "bg-slate-800 hover:bg-slate-700 text-slate-200"
                     }`}
                   >
                     {c.title}
                   </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">No courses.</p>
-          )}
-        </section>
-        <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-semibold mb-3">Quiz</h2>
-          {selectedCourseId === null ? (
-            <p className="text-sm text-muted-foreground">
-              Select a course first.
-            </p>
-          ) : quizzes?.length ? (
-            <ul className="space-y-2">
-              {quizzes.map((q) => (
-                <li key={q.id}>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-400 py-8 text-center">No courses found.</p>
+            )}
+          </div>
+
+          {/* Quizzes Column */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+            <h2 className="text-2xl font-bold text-white mb-6">Quizzes</h2>
+            
+            {selectedCourseId === null ? (
+              <div className="text-center py-12 text-slate-400">
+                Select a course to see its quizzes
+              </div>
+            ) : quizzes?.length ? (
+              <div className="space-y-2">
+                {quizzes.map((q) => (
                   <button
+                    key={q.id}
                     type="button"
                     onClick={() => setSelectedQuizId(q.id)}
-                    className={`w-full text-left rounded-lg px-3 py-2 text-sm font-medium transition ${
+                    className={`w-full text-left px-6 py-4 rounded-2xl transition-all text-lg font-medium ${
                       selectedQuizId === q.id
-                        ? "bg-primary text-primary-foreground"
-                        : "hover:bg-muted"
+                        ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-lg"
+                        : "bg-slate-800 hover:bg-slate-700 text-slate-200"
                     }`}
                   >
                     {q.title}
                   </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No quizzes in this course.
-            </p>
-          )}
-        </section>
-        <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-semibold mb-3">Scores</h2>
-          {selectedQuizId === null ? (
-            <p className="text-sm text-muted-foreground">
-              Select a quiz to see scores.
-            </p>
-          ) : isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : attempts?.length ? (
-            <ul className="space-y-2">
-              {attempts.map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
-                >
-                  <span className="font-medium">
-                    {a.student_name || a.username}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {a.score} / {a.total}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              No attempts yet for this quiz.
-            </p>
-          )}
-        </section>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-400">
+                No quizzes in this course yet.
+              </div>
+            )}
+          </div>
+
+          {/* Scores Column */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50 lg:col-span-1">
+            <h2 className="text-2xl font-bold text-white mb-6">Student Scores</h2>
+            
+            {selectedQuizId === null ? (
+              <div className="text-center py-12 text-slate-400">
+                Select a quiz to view student scores
+              </div>
+            ) : isLoading ? (
+              <div className="text-center py-12 text-slate-400">Loading scores...</div>
+            ) : attempts?.length ? (
+              <div className="space-y-3">
+                {attempts.map((a) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center justify-between bg-slate-950 border border-slate-700 rounded-2xl px-6 py-5 hover:border-yellow-400/30 transition-all"
+                  >
+                    <div>
+                      <p className="font-medium text-white">
+                        {a.student_name || a.username}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Submitted {new Date(a.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-white">
+                        {a.score}
+                      </span>
+                      <span className="text-slate-400"> / {a.total}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-slate-400">
+                No attempts yet for this quiz.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

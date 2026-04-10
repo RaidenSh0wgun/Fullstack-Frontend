@@ -8,6 +8,7 @@ import {
   fetchAttemptedQuizzes,
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { Star, BookOpen, Calendar, Trophy, Clock } from "lucide-react";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -24,14 +25,28 @@ export default function DashboardPage() {
 
 function AdminDashboard() {
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-      <p className="text-muted-foreground">
-        Manage student and teacher accounts from the Admin page.
-      </p>
-      <Link to="/admin" className="inline-block">
-        <Button size="sm">Open admin panel</Button>
-      </Link>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-10 shadow-2xl shadow-black/30">
+        <div className="text-center mb-10">
+          <div className="mx-auto w-24 h-24 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center border-2 border-white/20 mb-6">
+            <Star className="w-12 h-12 text-yellow-400" />
+          </div>
+          <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            ADMIN CONTROL CENTER
+          </h1>
+        </div>
+
+        <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/50 rounded-3xl p-10">
+          <p className="text-slate-300 text-xl text-center mb-10">
+            Manage student and teacher accounts from the Admin page.
+          </p>
+          <Link to="/admin" className="block">
+            <Button className="w-full h-14 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 hover:from-red-600 hover:via-yellow-600 hover:to-orange-600 text-white font-bold text-lg rounded-2xl shadow-2xl shadow-red-500/50 hover:shadow-3xl transition-all">
+              OPEN ADMIN PANEL
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
@@ -51,56 +66,77 @@ function InstructorDashboard() {
     .slice(0, 5);
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <section className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <h2 className="text-lg font-semibold mb-3">Courses</h2>
-          {courses?.length ? (
-            <ul className="space-y-2">
-              {courses.slice(0, 5).map((c) => (
-                <li key={c.id}>
-                  <Link
-                    to={`/courses/${c.id}`}
-                    className="text-primary hover:underline font-medium"
-                  >
-                    {c.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">No courses yet.</p>
-          )}
-          <Link to="/courses" className="inline-block mt-3">
-            <Button size="sm" variant="outline">
-              View all courses
-            </Button>
-          </Link>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center gap-4 mb-12">
+          <div className="w-16 h-16 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center border-2 border-white/20">
+            <BookOpen className="w-9 h-9 text-yellow-400" />
+          </div>
+          <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            INSTRUCTOR DASHBOARD
+          </h1>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <h2 className="text-lg font-semibold mb-3">Calendar</h2>
-          {upcomingEvents.length ? (
-            <ul className="space-y-2">
-              {upcomingEvents.map((e) => (
-                <li key={e.id} className="text-sm">
-                  <span className="font-medium">{e.title}</span>
-                  <span className="text-muted-foreground ml-2">
-                    {new Date(e.start).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">No upcoming events.</p>
-          )}
-          <Link to="/calendar" className="inline-block mt-3">
-            <Button size="sm" variant="outline">
-              Open calendar
-            </Button>
-          </Link>
+
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/30">
+            <div className="flex items-center gap-3 mb-8">
+              <BookOpen className="w-8 h-8 text-yellow-400" />
+              <h2 className="text-2xl font-bold text-slate-100">Courses</h2>
+            </div>
+
+            {courses?.length ? (
+              <ul className="space-y-4 mb-8">
+                {courses.slice(0, 5).map((c) => (
+                  <li key={c.id}>
+                    <Link
+                      to={`/courses/${c.id}`}
+                      className="block p-4 bg-slate-800/80 hover:bg-slate-700/80 rounded-2xl border border-slate-600/50 hover:border-yellow-400/50 transition-all"
+                    >
+                      <span className="font-semibold text-lg text-white">{c.title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-400 py-8 text-center">No courses yet.</p>
+            )}
+
+            <Link to="/courses">
+              <Button className="w-full h-12 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl shadow-xl">
+                VIEW ALL COURSES
+              </Button>
+            </Link>
+          </div>
+
+          <div className="bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/30">
+            <div className="flex items-center gap-3 mb-8">
+              <Calendar className="w-8 h-8 text-yellow-400" />
+              <h2 className="text-2xl font-bold text-slate-100">Calendar</h2>
+            </div>
+
+            {upcomingEvents.length ? (
+              <ul className="space-y-4 mb-8">
+                {upcomingEvents.map((e) => (
+                  <li key={e.id} className="p-4 bg-slate-800/80 rounded-2xl border border-slate-600/50">
+                    <div className="font-semibold text-white">{e.title}</div>
+                    <div className="text-sm text-slate-400 mt-1">
+                      {new Date(e.start).toLocaleString()}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-400 py-8 text-center">No upcoming events.</p>
+            )}
+
+            <Link to="/calendar">
+              <Button variant="outline" className="w-full h-12 border-slate-600 text-slate-300 hover:bg-slate-800 rounded-2xl">
+                OPEN CALENDAR
+              </Button>
+            </Link>
+          </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
@@ -126,78 +162,98 @@ function StudentDashboard() {
     .slice(0, 5);
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <section className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <h2 className="text-lg font-semibold mb-3">Quizzes to complete</h2>
-          {pending?.length ? (
-            <ul className="space-y-2">
-              {pending.slice(0, 5).map((q) => (
-                <li key={q.id} className="flex items-center justify-between gap-2">
-                  <div>
-                    <span className="font-medium">{q.title}</span>
-                    {q.due_date && (
-                      <div className="text-xs text-muted-foreground">
-                        Due: {new Date(q.due_date).toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-                  <Link to={`/quiz/${q.id}`}>
-                    <Button size="sm">Take quiz</Button>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">No pending quizzes.</p>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center gap-4 mb-12">
+          <div className="w-16 h-16 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center border-2 border-white/20">
+            <Trophy className="w-9 h-9 text-yellow-400" />
+          </div>
+          <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+            STUDENT DASHBOARD
+          </h1>
+        </div>
 
-          {!!attempted?.length && (
-            <div className="mt-6 pt-4 border-t border-border">
-              <h3 className="text-sm font-semibold mb-3">
-                Completed quizzes
-              </h3>
-              <ul className="space-y-2">
-                {attempted.slice(0, 5).map((q) => (
-                  <li key={q.id} className="flex items-center justify-between gap-2">
+        <div className="grid gap-8 md:grid-cols-2">
+          <div className="bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/30">
+            <div className="flex items-center gap-3 mb-8">
+              <Trophy className="w-8 h-8 text-yellow-400" />
+              <h2 className="text-2xl font-bold text-slate-100">Quizzes to complete</h2>
+            </div>
+
+            {pending?.length ? (
+              <div className="space-y-4 mb-8">
+                {pending.slice(0, 5).map((q) => (
+                  <div key={q.id} className="flex items-center justify-between bg-slate-800/80 p-5 rounded-2xl border border-slate-600/50">
                     <div>
-                      <span className="font-medium">{q.title}</span>
+                      <div className="font-semibold text-lg text-white">{q.title}</div>
+                      {q.due_date && (
+                        <div className="text-sm text-red-400 mt-1">
+                          Due: {new Date(q.due_date).toLocaleString()}
+                        </div>
+                      )}
                     </div>
-                    <Link to={`/quiz/${q.id}?viewAttempt=true`}>
-                      <Button size="sm" variant="outline">
-                        View attempt
+                    <Link to={`/quiz/${q.id}`}>
+                      <Button className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold px-8 rounded-2xl">
+                        TAKE QUIZ
                       </Button>
                     </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-400 py-8 text-center">No pending quizzes.</p>
+            )}
+
+            {!!attempted?.length && (
+              <div className="mt-10 pt-8 border-t border-slate-700">
+                <h3 className="text-yellow-400 font-bold mb-4 flex items-center gap-2">
+                  <Star className="w-5 h-5" /> Completed quizzes
+                </h3>
+                <div className="space-y-3">
+                  {attempted.slice(0, 5).map((q) => (
+                    <Link
+                      key={q.id}
+                      to={`/quiz/${q.id}?viewAttempt=true`}
+                      className="block p-5 bg-slate-800/80 hover:bg-slate-700/80 rounded-2xl border border-slate-600/50 transition-all"
+                    >
+                      <span className="font-medium text-white">{q.title}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/30">
+            <div className="flex items-center gap-3 mb-8">
+              <Calendar className="w-8 h-8 text-yellow-400" />
+              <h2 className="text-2xl font-bold text-slate-100">Calendar</h2>
+            </div>
+
+            {upcomingEvents.length ? (
+              <ul className="space-y-4 mb-8">
+                {upcomingEvents.map((e) => (
+                  <li key={e.id} className="p-4 bg-slate-800/80 rounded-2xl border border-slate-600/50">
+                    <div className="font-semibold text-white">{e.title}</div>
+                    <div className="text-sm text-slate-400 mt-1 flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      {new Date(e.start).toLocaleString()}
+                    </div>
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
+            ) : (
+              <p className="text-slate-400 py-8 text-center">No upcoming events.</p>
+            )}
+
+            <Link to="/calendar">
+              <Button variant="outline" className="w-full h-12 border-slate-600 text-slate-300 hover:bg-slate-800 rounded-2xl">
+                OPEN CALENDAR
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <h2 className="text-lg font-semibold mb-3">Calendar</h2>
-          {upcomingEvents.length ? (
-            <ul className="space-y-2">
-              {upcomingEvents.map((e) => (
-                <li key={e.id} className="text-sm">
-                  <span className="font-medium">{e.title}</span>
-                  <span className="text-muted-foreground ml-2">
-                    {new Date(e.start).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">No upcoming events.</p>
-          )}
-          <Link to="/calendar" className="inline-block mt-3">
-            <Button size="sm" variant="outline">
-              Open calendar
-            </Button>
-          </Link>
-        </div>
-      </section>
+      </div>
     </div>
   );
 }

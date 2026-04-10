@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchQuizDetail, updateQuiz } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,7 @@ function fromLocalInputValue(value: string): string | null {
 }
 
 export default function EditQuizSettingsTab() {
-  const { quizId } = useParams<{ courseId: string; quizId: string }>();
+  const { quizId } = useParams<{ quizId: string }>();
   const qid = quizId ? parseInt(quizId, 10) : NaN;
   const queryClient = useQueryClient();
 
@@ -57,88 +57,96 @@ export default function EditQuizSettingsTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quiz", qid] });
       queryClient.invalidateQueries({ queryKey: ["quizzes"] });
-      queryClient.invalidateQueries({ queryKey: ["pending-quizzes"] });
     },
   });
 
   if (!Number.isInteger(qid)) {
-    return <p className="text-sm text-muted-foreground">Invalid quiz.</p>;
+    return <p className="text-slate-400">Invalid quiz.</p>;
   }
 
   if (isLoading || !quiz) {
-    return <p className="text-sm text-muted-foreground">Loading settings...</p>;
+    return <p className="text-slate-400">Loading settings...</p>;
   }
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-        <h2 className="text-base font-semibold">Quiz availability</h2>
-        <div className="flex items-center gap-3">
+    <div className="space-y-8">
+      {/* Quiz Availability Card */}
+      <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+        <h2 className="text-2xl font-bold text-white mb-6">Quiz Availability</h2>
+
+        <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={() => setIsActive((v) => !v)}
-            className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition ${
-              isActive
-                ? "border-emerald-500 bg-emerald-500/10 text-emerald-700"
-                : "border-border bg-muted text-muted-foreground"
-            }`}
             disabled={saveMutation.isPending}
+            className={`inline-flex items-center gap-3 rounded-2xl border px-6 py-4 text-sm font-medium transition-all ${
+              isActive
+                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400"
+                : "border-slate-700 bg-slate-800 text-slate-400"
+            }`}
           >
-            <span
-              className={`mr-2 h-2 w-2 rounded-full ${
-                isActive ? "bg-emerald-500" : "bg-muted-foreground"
+            <div
+              className={`h-3 w-3 rounded-full transition-all ${
+                isActive ? "bg-emerald-500" : "bg-slate-500"
               }`}
             />
-            {isActive ? "Active for students" : "Inactive (hidden / blocked)"}
+            {isActive ? "Active for students" : "Inactive (hidden from students)"}
           </button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          When inactive, students won&apos;t be able to start this quiz (even if they have
-          the link).
+
+        <p className="mt-4 text-slate-400 text-sm max-w-md">
+          When inactive, students will not be able to start this quiz even if they have the direct link.
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4 space-y-4">
-        <h2 className="text-base font-semibold">Timer & due date</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+      {/* Timer & Due Date Card */}
+      <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
+        <h2 className="text-2xl font-bold text-white mb-6">Timer & Due Date</h2>
+
+        <div className="grid gap-8 md:grid-cols-2">
+          {/* Duration */}
           <div>
-            <Label>Timer (minutes)</Label>
+            <Label className="text-slate-200">Timer Duration (minutes)</Label>
             <Input
               type="number"
               min={1}
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               disabled={saveMutation.isPending}
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-3 text-lg"
             />
-            <p className="mt-1 text-xs text-muted-foreground">
-              This controls the countdown students see when taking the quiz.
+            <p className="mt-3 text-xs text-slate-400">
+              This controls the countdown timer students see while taking the quiz.
             </p>
           </div>
 
+          {/* Due Date */}
           <div>
-            <Label>Due date (optional)</Label>
+            <Label className="text-slate-200">Due Date (optional)</Label>
             <Input
               type="datetime-local"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               disabled={saveMutation.isPending}
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-3"
             />
-            <p className="mt-1 text-xs text-muted-foreground">
-              Used for the calendar and can later be enforced to block late attempts.
+            <p className="mt-3 text-xs text-slate-400">
+              Students will see this date. You can later enforce it to block late submissions.
             </p>
           </div>
         </div>
 
-        <div className="pt-2">
+        {/* Save Button */}
+        <div className="mt-10">
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending || !duration.trim()}
+            className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-10 py-6 shadow-lg hover:brightness-110"
           >
-            {saveMutation.isPending ? "Saving..." : "Save settings"}
+            {saveMutation.isPending ? "Saving Settings..." : "Save Settings"}
           </Button>
         </div>
       </div>
     </div>
   );
 }
-

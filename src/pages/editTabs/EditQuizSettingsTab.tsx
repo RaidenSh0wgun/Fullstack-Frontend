@@ -39,12 +39,14 @@ export default function EditQuizSettingsTab() {
   const [isActive, setIsActive] = useState(true);
   const [duration, setDuration] = useState("10");
   const [dueDate, setDueDate] = useState("");
+  const [showScores, setShowScores] = useState(true);
 
   useEffect(() => {
     if (!quiz) return;
     setIsActive(quiz.is_active ?? true);
     setDuration(String(quiz.duration_minutes ?? 10));
     setDueDate(toLocalInputValue(quiz.due_date ?? null));
+    setShowScores(quiz.show_scores_after_quiz ?? true);
   }, [quiz]);
 
   const saveMutation = useMutation({
@@ -53,6 +55,7 @@ export default function EditQuizSettingsTab() {
         is_active: isActive,
         duration_minutes: Number(duration) || 10,
         due_date: fromLocalInputValue(dueDate),
+        show_scores_after_quiz: showScores,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quiz", qid] });
@@ -134,6 +137,26 @@ export default function EditQuizSettingsTab() {
               Students will see this date. You can later enforce it to block late submissions.
             </p>
           </div>
+        </div>
+
+        {/* Score Visibility */}
+        <div className="mt-8">
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="showScores"
+              checked={showScores}
+              onChange={(e) => setShowScores(e.target.checked)}
+              disabled={saveMutation.isPending}
+              className="w-5 h-5 text-yellow-400 bg-slate-800 border-slate-600 rounded focus:ring-yellow-400 focus:ring-2"
+            />
+            <Label htmlFor="showScores" className="text-slate-200 text-base">
+              Allow students to view their scores after completing the quiz
+            </Label>
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            When enabled, students can see their final score and correct answers after submitting.
+          </p>
         </div>
 
         {/* Save Button */}

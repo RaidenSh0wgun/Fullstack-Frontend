@@ -88,7 +88,7 @@ export default function CourseDetailPage() {
   const { data: quizzes, isLoading } = useQuery({
     queryKey: ["quizzes", id],
     queryFn: () => fetchQuizzesForCourse(id),
-    enabled: Number.isInteger(id),
+    enabled: Number.isInteger(id) && (isTeacher || course?.is_enrolled),
   });
 
   const [openCreateQuiz, setOpenCreateQuiz] = useState(false);
@@ -102,6 +102,7 @@ export default function CourseDetailPage() {
   const [quizDescription, setQuizDescription] = useState("");
   const [quizDuration, setQuizDuration] = useState("10");
   const [quizDueDate, setQuizDueDate] = useState("");
+  const [quizShowScores, setQuizShowScores] = useState(true);
   const [quizFilter, setQuizFilter] = useState<"all" | "completed" | "pending" | "dueDate">("all");
   const [openUnenrollDialog, setOpenUnenrollDialog] = useState(false);
 
@@ -131,6 +132,7 @@ export default function CourseDetailPage() {
       setQuizDescription("");
       setQuizDuration("10");
       setQuizDueDate("");
+      setQuizShowScores(true);
       navigate(`/courses/${id}/quizzes/${created.id}/questions`);
     },
     onError: () => {
@@ -174,6 +176,7 @@ export default function CourseDetailPage() {
       duration_minutes: Number(quizDuration) || 10,
       course: id,
       due_date: quizDueDate.trim() || null,
+      show_scores_after_quiz: quizShowScores,
       questions: [],
     };
     createQuizMutation.mutate(payload);
@@ -280,158 +283,179 @@ export default function CourseDetailPage() {
                 </>
               )}
 
-              {!isTeacher && course && (
-                course.is_enrolled ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => setOpenUnenrollDialog(true)}
-                    disabled={unenrollMutation.isPending}
-                    className="rounded-2xl border-slate-600 hover:bg-slate-800"
-                  >
-                    Unenroll
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => setOpenEnrollDialog(true)}
-                    disabled={enrollMutation.isPending}
-                    className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-10 py-6 text-lg shadow-lg shadow-orange-500/30"
-                  >
-                    ENROLL NOW
-                  </Button>
-                )
+              {!isTeacher && course?.is_enrolled && (
+                <Button
+                  variant="outline"
+                  onClick={() => setOpenUnenrollDialog(true)}
+                  disabled={unenrollMutation.isPending}
+                  className="rounded-2xl border-slate-600 hover:bg-slate-800"
+                >
+                  Unenroll
+                </Button>
               )}
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/50">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
-            <div className="flex items-center gap-4">
-              <Star className="w-9 h-9 text-yellow-400" />
-              <h2 className="text-3xl font-bold text-white">Quizzes</h2>
-            </div>
+        {isTeacher || course?.is_enrolled ? (
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+              <div className="flex items-center gap-4">
+                <Star className="w-9 h-9 text-yellow-400" />
+                <h2 className="text-3xl font-bold text-white">Quizzes</h2>
+              </div>
 
-            <div className="flex items-center gap-4 flex-wrap">
-              {!isTeacher && (
-                <div className="flex bg-slate-800/90 rounded-2xl p-1 border border-slate-700">
-                  {(["all", "pending", "completed", "dueDate"] as const).map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setQuizFilter(filter)}
-                      className={`px-6 py-2.5 text-sm font-medium rounded-xl transition-all ${
-                        quizFilter === filter
-                          ? "bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-md"
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      {filter === "all" ? "All" : filter === "pending" ? "Pending" : filter === "completed" ? "Completed" : "Due Soon"}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="flex items-center gap-4 flex-wrap">
+                {!isTeacher && (
+                  <div className="flex bg-slate-800/90 rounded-2xl p-1 border border-slate-700">
+                    {(["all", "pending", "completed", "dueDate"] as const).map((filter) => (
+                      <button
+                        key={filter}
+                        onClick={() => setQuizFilter(filter)}
+                        className={`px-6 py-2.5 text-sm font-medium rounded-xl transition-all ${
+                          quizFilter === filter
+                            ? "bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-md"
+                            : "text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {filter === "all" ? "All" : filter === "pending" ? "Pending" : filter === "completed" ? "Completed" : "Due Soon"}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-              {isTeacher && (
-                <Dialog open={openCreateQuiz} onOpenChange={setOpenCreateQuiz}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl h-14 px-8 flex items-center gap-3 shadow-lg shadow-orange-500/30 hover:brightness-110">
-                      <Plus className="w-6 h-6" />
-                      NEW QUIZ
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="bg-slate-900 border-slate-700 text-white">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl">Create New Quiz</DialogTitle>
-                      <DialogDescription className="text-slate-400">
-                        Create a quiz and add questions on the next page.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleCreateQuiz} className="space-y-6">
-                      <div>
-                        <Label className="text-slate-200">Quiz Title *</Label>
-                        <Input
-                          value={quizTitle}
-                          onChange={(e) => setQuizTitle(e.target.value)}
-                          placeholder="e.g. Week 1 Quiz"
-                          required
-                          className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-slate-200">Description (optional)</Label>
-                        <Textarea
-                          value={quizDescription}
-                          onChange={(e) => setQuizDescription(e.target.value)}
-                          placeholder="What does this quiz cover?"
-                          rows={3}
-                          className="bg-slate-800 border-slate-600 rounded-2xl focus:border-yellow-400"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
+                {isTeacher && (
+                  <Dialog open={openCreateQuiz} onOpenChange={setOpenCreateQuiz}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl h-14 px-8 flex items-center gap-3 shadow-lg shadow-orange-500/30 hover:brightness-110">
+                        <Plus className="w-6 h-6" />
+                        NEW QUIZ
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-slate-900 border-slate-700 text-white">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl">Create New Quiz</DialogTitle>
+                        <DialogDescription className="text-slate-400">
+                          Create a quiz and add questions on the next page.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateQuiz} className="space-y-6">
                         <div>
-                          <Label className="text-slate-200">Duration (minutes)</Label>
+                          <Label className="text-slate-200">Quiz Title *</Label>
                           <Input
-                            type="number"
-                            min={1}
-                            value={quizDuration}
-                            onChange={(e) => setQuizDuration(e.target.value)}
-                            className="bg-slate-800 border-slate-600 h-12 rounded-2xl"
+                            value={quizTitle}
+                            onChange={(e) => setQuizTitle(e.target.value)}
+                            placeholder="e.g. Week 1 Quiz"
+                            required
+                            className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400"
                           />
                         </div>
                         <div>
-                          <Label className="text-slate-200">Due Date (optional)</Label>
-                          <Input
-                            type="datetime-local"
-                            value={quizDueDate}
-                            onChange={(e) => setQuizDueDate(e.target.value)}
-                            className="bg-slate-800 border-slate-600 h-12 rounded-2xl"
+                          <Label className="text-slate-200">Description (optional)</Label>
+                          <Textarea
+                            value={quizDescription}
+                            onChange={(e) => setQuizDescription(e.target.value)}
+                            placeholder="What does this quiz cover?"
+                            rows={3}
+                            className="bg-slate-800 border-slate-600 rounded-2xl focus:border-yellow-400"
                           />
                         </div>
-                      </div>
-                      <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpenCreateQuiz(false)} className="rounded-2xl">
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={createQuizMutation.isPending || !quizTitle.trim()}
-                          className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 rounded-2xl"
-                        >
-                          Create & Add Questions
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              )}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-slate-200">Duration (minutes)</Label>
+                            <Input
+                              type="number"
+                              min={1}
+                              value={quizDuration}
+                              onChange={(e) => setQuizDuration(e.target.value)}
+                              className="bg-slate-800 border-slate-600 h-12 rounded-2xl"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-slate-200">Due Date (optional)</Label>
+                            <Input
+                              type="datetime-local"
+                              value={quizDueDate}
+                              onChange={(e) => setQuizDueDate(e.target.value)}
+                              className="bg-slate-800 border-slate-600 h-12 rounded-2xl"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id="showScores"
+                            checked={quizShowScores}
+                            onChange={(e) => setQuizShowScores(e.target.checked)}
+                            className="w-4 h-4 text-yellow-400 bg-slate-800 border-slate-600 rounded focus:ring-yellow-400 focus:ring-2"
+                          />
+                          <Label htmlFor="showScores" className="text-slate-200 text-sm">
+                            Allow students to view their scores after completing the quiz
+                          </Label>
+                        </div>
+                        <DialogFooter>
+                          <Button type="button" variant="outline" onClick={() => setOpenCreateQuiz(false)} className="rounded-2xl">
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={createQuizMutation.isPending || !quizTitle.trim()}
+                            className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 rounded-2xl"
+                          >
+                            Create & Add Questions
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
             </div>
+
+            {isLoading ? (
+              <p className="text-slate-400 text-center py-12">Loading quizzes...</p>
+            ) : filteredQuizzes.length ? (
+              <div className="space-y-4">
+                {filteredQuizzes.map((quiz) => (
+                  <QuizRow
+                    key={quiz.id}
+                    quiz={quiz}
+                    courseId={id}
+                    isTeacher={isTeacher}
+                    isEnrolled={course?.is_enrolled ?? false}
+                    onDelete={() => deleteQuizMutation.mutate(quiz.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20">
+                <Star className="w-16 h-16 text-yellow-400 mx-auto mb-6 opacity-50" />
+                <p className="text-slate-400 text-xl">
+                  {quizFilter === "all" ? "No quizzes in this course yet." : 
+                   quizFilter === "completed" ? "No completed quizzes." :
+                   quizFilter === "pending" ? "No pending quizzes." : "No quizzes with due dates."}
+                </p>
+              </div>
+            )}
           </div>
-
-          {isLoading ? (
-            <p className="text-slate-400 text-center py-12">Loading quizzes...</p>
-          ) : filteredQuizzes.length ? (
-            <div className="space-y-4">
-              {filteredQuizzes.map((quiz) => (
-                <QuizRow
-                  key={quiz.id}
-                  quiz={quiz}
-                  courseId={id}
-                  isTeacher={isTeacher}
-                  isEnrolled={course?.is_enrolled ?? false}
-                  onDelete={() => deleteQuizMutation.mutate(quiz.id)}
-                />
-              ))}
+        ) : (
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/50 text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/10">
+              <Star className="w-11 h-11 text-yellow-400" />
             </div>
-          ) : (
-            <div className="text-center py-20">
-              <Star className="w-16 h-16 text-yellow-400 mx-auto mb-6 opacity-50" />
-              <p className="text-slate-400 text-xl">
-                {quizFilter === "all" ? "No quizzes in this course yet." : 
-                 quizFilter === "completed" ? "No completed quizzes." :
-                 quizFilter === "pending" ? "No pending quizzes." : "No quizzes with due dates."}
-              </p>
-            </div>
-          )}
-        </div>
+            <h2 className="text-3xl font-bold text-white mb-4">Enroll to Access Quizzes</h2>
+            <p className="text-slate-400 text-lg mb-8 max-w-md mx-auto">
+              You need to enroll in this course first to view and take the quizzes.
+            </p>
+            <Button
+              onClick={() => setOpenEnrollDialog(true)}
+              disabled={enrollMutation.isPending}
+              className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-10 py-6 text-lg shadow-lg shadow-orange-500/30"
+            >
+              ENROLL NOW
+            </Button>
+          </div>
+        )}
       </div>
 
       <Dialog open={openEnrollDialog} onOpenChange={(isOpen) => {

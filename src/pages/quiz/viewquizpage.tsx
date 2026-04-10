@@ -107,9 +107,9 @@ export default function ViewQuizPage() {
             </div>
             <h2 className="text-3xl font-bold text-emerald-400 mb-2">Quiz Completed</h2>
             <div className="text-5xl font-black text-white mt-4">
-              {attempt
+              {attempt && quiz.show_scores_after_quiz !== false
                 ? `${attempt.effective_score ?? attempt.score} / ${attempt.total}`
-                : "Score unavailable"}
+                : "Score hidden by instructor"}
             </div>
             <p className="text-emerald-300 mt-2">Well done!</p>
           </div>

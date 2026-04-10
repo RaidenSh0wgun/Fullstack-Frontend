@@ -50,6 +50,7 @@ export interface Quiz {
   is_active?: boolean;
   due_date?: string | null;
   has_attempted?: boolean;
+  show_scores_after_quiz?: boolean;
   question_count?: number;
 }
 
@@ -102,6 +103,7 @@ export interface QuizCreatePayload {
   duration_minutes: number;
   course: number;
   due_date?: string | null;
+  show_scores_after_quiz?: boolean;
   questions?: QuizQuestionPayload[];
 }
 
@@ -338,8 +340,8 @@ export interface CalendarEvent {
   related_quiz: number | null;
 }
 
-export async function fetchMyEvents(): Promise<CalendarEvent[]> {
-  return request<CalendarEvent[]>("/events/");
+export async function fetchCalendarQuizzes(): Promise<Quiz[]> {
+  return request<Quiz[]>("/quizzes/calendar/");
 }
 
 export async function fetchPendingQuizzes(): Promise<Quiz[]> {

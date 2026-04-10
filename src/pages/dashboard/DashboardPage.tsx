@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchTeacherCourses,
-  fetchMyEvents,
+  fetchCalendarQuizzes,
   fetchPendingQuizzes,
   fetchAttemptedQuizzes,
 } from "@/services/api";
@@ -57,12 +57,12 @@ function InstructorDashboard() {
     queryFn: fetchTeacherCourses,
   });
   const { data: events } = useQuery({
-    queryKey: ["events"],
-    queryFn: fetchMyEvents,
+    queryKey: ["calendar-quizzes"],
+    queryFn: fetchCalendarQuizzes,
   });
 
   const upcomingEvents = (events ?? [])
-    .filter((e) => new Date(e.start) >= new Date())
+    .filter((e) => e.due_date && new Date(e.due_date) >= new Date())
     .slice(0, 5);
 
   return (
@@ -120,7 +120,7 @@ function InstructorDashboard() {
                   <li key={e.id} className="p-4 bg-slate-800/80 rounded-2xl border border-slate-600/50">
                     <div className="font-semibold text-white">{e.title}</div>
                     <div className="text-sm text-slate-400 mt-1">
-                      {new Date(e.start).toLocaleString()}
+                      {e.due_date ? new Date(e.due_date).toLocaleString() : ""}
                     </div>
                   </li>
                 ))}
@@ -153,12 +153,12 @@ function StudentDashboard() {
   });
 
   const { data: events } = useQuery({
-    queryKey: ["events"],
-    queryFn: fetchMyEvents,
+    queryKey: ["calendar-quizzes"],
+    queryFn: fetchCalendarQuizzes,
   });
 
   const upcomingEvents = (events ?? [])
-    .filter((e) => new Date(e.start) >= new Date())
+    .filter((e) => e.due_date && new Date(e.due_date) >= new Date())
     .slice(0, 5);
 
   return (
@@ -237,7 +237,7 @@ function StudentDashboard() {
                     <div className="font-semibold text-white">{e.title}</div>
                     <div className="text-sm text-slate-400 mt-1 flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      {new Date(e.start).toLocaleString()}
+                      {e.due_date ? new Date(e.due_date).toLocaleString() : ""}
                     </div>
                   </li>
                 ))}

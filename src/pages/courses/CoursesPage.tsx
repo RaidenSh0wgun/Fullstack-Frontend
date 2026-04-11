@@ -34,7 +34,7 @@ export default function CoursesPage() {
   const [courseTitle, setCourseTitle] = useState("");
   const [courseDescription, setCourseDescription] = useState("");
   const [coursePasskey, setCoursePasskey] = useState("");
-  const [viewMode, setViewMode] = useState<"all" | "my">("all");
+  const [viewMode, setViewMode] = useState<"all" | "my">("my");
 
   const { data: courses, isLoading } = useQuery({
     queryKey: ["courses", viewMode, isTeacher],

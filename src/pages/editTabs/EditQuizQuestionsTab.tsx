@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 function buildPayload(input: {
   text: string;
   question_type: QuestionType;
+  answer_format?: string;
   correct_text?: string;
   choices: QuizChoicePayload[];
 }): QuizQuestionPayload {
@@ -26,6 +27,7 @@ function buildPayload(input: {
     return {
       text: input.text.trim(),
       question_type: "tf",
+      answer_format: input.answer_format,
       correct_text: correctIsTrue ? "True" : "False",
       choices: [
         { text: "True", is_correct: correctIsTrue },
@@ -38,6 +40,7 @@ function buildPayload(input: {
     return {
       text: input.text.trim(),
       question_type: input.question_type,
+      answer_format: input.answer_format,
       correct_text: (input.correct_text || "").trim(),
       choices: [],
     };
@@ -55,6 +58,7 @@ function buildPayload(input: {
   return {
     text: input.text.trim(),
     question_type: "mcq",
+    answer_format: input.answer_format,
     correct_text: "",
     choices: normalized,
   };
@@ -73,6 +77,7 @@ export default function EditQuizQuestionsTab() {
 
   const [newText, setNewText] = useState("");
   const [newType, setNewType] = useState<QuestionType>("mcq");
+  const [newAnswerFormat, setNewAnswerFormat] = useState("exact");
   const [newCorrectTexts, setNewCorrectTexts] = useState<string[]>([""]);
   const [newChoices, setNewChoices] = useState<QuizChoicePayload[]>([
     { text: "", is_correct: true },
@@ -87,6 +92,7 @@ export default function EditQuizQuestionsTab() {
       queryClient.invalidateQueries({ queryKey: ["quiz", qid] });
       setNewText("");
       setNewType("mcq");
+      setNewAnswerFormat("exact");
       setNewCorrectTexts([""]);
       setNewChoices([
         { text: "", is_correct: true },
@@ -103,6 +109,7 @@ export default function EditQuizQuestionsTab() {
     const payload = buildPayload({
       text: newText,
       question_type: newType,
+      answer_format: newAnswerFormat,
       correct_text: newCorrectTexts.map((v) => v.trim()).filter(Boolean).join("\n"),
       choices: newChoices,
     });
@@ -309,6 +316,7 @@ function EditableQuestionRow({
 
   const [text, setText] = useState(question.text);
   const [type, setType] = useState<QuestionType>(question.question_type);
+  const [answerFormat, setAnswerFormat] = useState(question.answer_format || "exact");
   const [correctTexts, setCorrectTexts] = useState<string[]>(() => {
     const base = (question.correct_text || "")
       .split("\n")
@@ -342,6 +350,7 @@ function EditableQuestionRow({
     const payload = buildPayload({
       text,
       question_type: type,
+      answer_format: answerFormat,
       correct_text: correctTexts.map((v) => v.trim()).filter(Boolean).join("\n"),
       choices,
     });
@@ -411,6 +420,23 @@ function EditableQuestionRow({
               <option value="tf">True / False</option>
             </select>
           </div>
+
+          {(type === "identification" || type === "enumeration") && (
+            <div>
+              <Label className="text-slate-200">Answer Format</Label>
+              <select
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
+                value={answerFormat}
+                onChange={(e) => setAnswerFormat(e.target.value)}
+              >
+                <option value="exact">Exact case</option>
+                <option value="ignore">Ignore case</option>
+                <option value="upper">All uppercase</option>
+                <option value="lower">All lowercase</option>
+                <option value="capitalize">Capitalize</option>
+              </select>
+            </div>
+          )}
 
           {type === "mcq" && (
             <div className="space-y-3">

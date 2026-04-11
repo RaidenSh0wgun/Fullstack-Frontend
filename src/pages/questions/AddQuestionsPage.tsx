@@ -36,6 +36,7 @@ export default function AddQuestionsPage() {
 
   const [questionText, setQuestionText] = useState("");
   const [questionType, setQuestionType] = useState<QuestionType>("mcq");
+  const [answerFormat, setAnswerFormat] = useState("exact");
   const [correctTexts, setCorrectTexts] = useState<string[]>([""]);
   const [choices, setChoices] = useState<QuizChoicePayload[]>([
     { text: "", is_correct: true },
@@ -49,6 +50,7 @@ export default function AddQuestionsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quiz", qid] });
       setQuestionText("");
+      setAnswerFormat("exact");
       setCorrectTexts([""]);
       setChoices([
         { text: "", is_correct: true },
@@ -66,6 +68,7 @@ export default function AddQuestionsPage() {
     const payload: QuizQuestionPayload = {
       text: questionText.trim(),
       question_type: questionType,
+      answer_format: answerFormat,
       correct_text: correctTexts.map((v) => v.trim()).filter(Boolean).join("\n"),
       choices: choices.map((c) => ({ ...c })),
     };
@@ -156,6 +159,23 @@ export default function AddQuestionsPage() {
                 <option value="tf">True / False</option>
               </select>
             </div>
+
+            {(questionType === "identification" || questionType === "enumeration") && (
+              <div>
+                <Label className="text-slate-200">Answer Format</Label>
+                <select
+                  className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
+                  value={answerFormat}
+                  onChange={(e) => setAnswerFormat(e.target.value)}
+                >
+                  <option value="exact">Exact case</option>
+                  <option value="ignore">Ignore case</option>
+                  <option value="upper">All uppercase</option>
+                  <option value="lower">All lowercase</option>
+                  <option value="capitalize">Capitalize</option>
+                </select>
+              </div>
+            )}
 
             {questionType === "mcq" && (
               <div className="space-y-3">

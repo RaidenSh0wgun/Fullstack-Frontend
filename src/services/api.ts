@@ -63,6 +63,7 @@ export interface Question {
   id: number;
   text: string;
   question_type: QuestionType;
+  answer_format?: string;
   correct_text?: string;
   choices: QuestionChoice[];
 }
@@ -93,6 +94,7 @@ export interface QuizChoicePayload {
 export interface QuizQuestionPayload {
   text: string;
   question_type: QuestionType;
+  answer_format?: string;
   correct_text?: string;
   choices: QuizChoicePayload[];
 }

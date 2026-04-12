@@ -171,6 +171,14 @@ export default function LoginPage() {
               ? "Login"
               : "Register"}
           </Button>
+
+          {mode === "login" && (
+            <div className="text-center pt-2">
+              <a href="/forgot-password" className="text-xs text-yellow-400 hover:text-yellow-300 transition-colors">
+                Forgot password?
+              </a>
+            </div>
+          )}
         </form>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginPage from "@/pages/auths/loginpage";
+import ForgotPasswordPage from "@/pages/auths/ForgotPasswordPage";
+import ResetPasswordPage from "@/pages/auths/ResetPasswordPage";
 import QuizPage from "@/pages/quiz/quizpage";
 import QuizViewPage from "@/pages/quiz/viewquizpage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
@@ -23,6 +25,8 @@ export default function AppRouter() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
 
       <Route
         path="/quizview/:quizId"

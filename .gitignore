@@ -1,0 +1,57 @@
+# Django / Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+venv/
+env/
+.venv/
+lib/
+lib64/
+bin/
+share/
+
+# Django-specific files
+*.log
+debug.log
+db.sqlite3
+db.sqlite
+media/
+mediafiles/
+staticfiles/
+
+# React / Node.js
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Distribution directories
+build/
+dist/
+out/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Lock files (package-lock.json and yarn.lock should usually be tracked)
+# but you might ignore them if you have a specific workflow
+# package-lock.json
+# yarn.lock
+
+# Editor-specific files and OS generated files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

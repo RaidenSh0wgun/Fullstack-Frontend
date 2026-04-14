@@ -248,7 +248,6 @@ export default function QuizPage() {
 
   const isTimeUp = (timeLeft ?? 0) <= 0;
   const canEdit = !isTimeUp && submittedScore === null && !showAttempt;
-  const hasSubmitted = submitMutation.isSuccess || submittedScore !== null || clientScore !== null;
   const finalScore = submittedScore ?? clientScore;
 
   const questionCorrectness = useMemo(() => {
@@ -331,7 +330,6 @@ export default function QuizPage() {
         <div className="space-y-8">
           {questions.map((q, index) => {
             const answer = answers[q.id];
-            const isAnswered = answer !== undefined && answer !== "";
             const qType = (q as any).question_type as string;
             const isTextBased = qType === "identification" || qType === "enumeration";
             const expectedAnswers = isTextBased ? parseExpectedTextAnswers(q) : [];

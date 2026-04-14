@@ -50,6 +50,8 @@ export interface Course {
   updated_at?: string;
 }
 
+type ListResponse<T> = T[] | { results?: T[] };
+
 export interface Quiz {
   id: number;
   title: string;
@@ -254,7 +256,8 @@ export async function confirmEmailVerification(
 }
 
 export async function fetchMyCourses(): Promise<Course[]> {
-  return request<Course[]>("/courses/my/");
+  const data = await request<ListResponse<Course>>("/courses/my/");
+  return Array.isArray(data) ? data : data.results ?? [];
 }
 
 export async function fetchTeacherCourses(): Promise<Course[]> {
@@ -301,7 +304,8 @@ export async function unenrollCourse(id: number): Promise<Course> {
 export async function fetchQuizzesForCourse(
   courseId: number
 ): Promise<Quiz[]> {
-  return request<Quiz[]>(`/quizzes/?course=${courseId}`);
+  const data = await request<ListResponse<Quiz>>(`/quizzes/?course=${courseId}`);
+  return Array.isArray(data) ? data : data.results ?? [];
 }
 
 export async function createQuiz(
@@ -469,11 +473,13 @@ export async function updateQuizAttempt(
 
 /** For teacher: their courses. For student: use fetchEnrolledCourses for "my courses" or fetchCourses() for all. */
 export async function fetchEnrolledCourses(): Promise<Course[]> {
-  return request<Course[]>("/courses/enrolled/");
+  const data = await request<ListResponse<Course>>("/courses/enrolled/");
+  return Array.isArray(data) ? data : data.results ?? [];
 }
 
 export async function fetchCourses(): Promise<Course[]> {
-  return request<Course[]>("/courses/");
+  const data = await request<ListResponse<Course>>("/courses/");
+  return Array.isArray(data) ? data : data.results ?? [];
 }
 
 export async function fetchCourseDetail(id: number): Promise<Course> {

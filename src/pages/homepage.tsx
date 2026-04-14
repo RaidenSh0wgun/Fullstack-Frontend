@@ -12,8 +12,6 @@ import {
   type Quiz,
   type QuizCreatePayload,
   type QuizQuestionPayload,
-  type QuizChoicePayload,
-  type QuestionType,
   enrollCourse,
   unenrollCourse,
   updateQuiz,
@@ -33,14 +31,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
-function splitAnswers(raw: string | null | undefined): string[] {
-  const list = (raw || "")
-    .split("\n")
-    .map((v) => v.trim())
-    .filter(Boolean);
-  return list.length ? list : [""];
-}
 
 export default function Homepage() {
   const { user } = useAuth();
@@ -357,7 +347,7 @@ function TeacherDashboard() {
                   <div>
                     <p className="font-semibold text-white">{quiz.title}</p>
                     <p className="text-sm text-slate-400">
-                      {quiz.duration_minutes} min • {quiz.questions?.length || 0} questions
+                      {quiz.duration_minutes} min • {quiz.question_count ?? 0} questions
                     </p>
                   </div>
                   <div className="flex gap-3">
@@ -480,7 +470,7 @@ function TeacherDashboard() {
               </div>
 
               <div className="max-h-[400px] overflow-y-auto space-y-6 pr-2">
-                {quizQuestions.map((q, i) => (
+                {quizQuestions.map((_, i) => (
                   <div key={i} className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
                     {/* Question content here - same as your original but with dark styling */}
                     {/* (For brevity I kept the structure; you can keep your full question builder logic) */}
@@ -528,7 +518,7 @@ function StudentDashboard() {
   const [selectedEnrollCourseId, setSelectedEnrollCourseId] = useState<number | null>(null);
   const [enrollPasskey, setEnrollPasskey] = useState("");
 
-  const { data: courses, isLoading } = useQuery({
+  const { data: courses } = useQuery({
     queryKey: ["courses"],
     queryFn: fetchTeacherCourses,
   });
@@ -538,6 +528,9 @@ function StudentDashboard() {
     queryFn: () => fetchQuizzesForCourse(selectedCourseId as number),
     enabled: selectedCourseId !== null,
   });
+  const visibleQuizzes = selectedCourseId && quizzes
+    ? quizzes.filter((quiz) => quiz.course === selectedCourseId)
+    : [];
 
   const enrollMutation = useMutation({
     mutationFn: ({ id, passkey }: { id: number; passkey?: string }) =>

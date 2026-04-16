@@ -3,6 +3,10 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "@/pages/auths/loginpage";
 import ForgotPasswordPage from "@/pages/auths/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auths/ResetPasswordPage";
+<<<<<<< HEAD
+=======
+import VerifyEmailPage from "@/pages/auths/VerifyEmailPage";
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 import QuizPage from "@/pages/quiz/quizpage";
 import QuizViewPage from "@/pages/quiz/viewquizpage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
@@ -13,6 +17,10 @@ import CalendarPage from "@/pages/calendar/CalendarPage";
 import StudentsPage from "@/pages/students/StudentsPage";
 import ScoresPage from "@/pages/scores/ScoresPage";
 import AdminPage from "@/pages/admin/AdminPage";
+<<<<<<< HEAD
+=======
+import ProfilePage from "@/pages/profile/ProfilePage";
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
 import EditQuizLayout from "@/pages/editTabs/EditQuizLayout";
@@ -27,6 +35,10 @@ export default function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password/:uid/:token" element={<ResetPasswordPage />} />
+<<<<<<< HEAD
+=======
+      <Route path="/verify-email/:uid/:token" element={<VerifyEmailPage />} />
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 
       <Route
         path="/quizview/:quizId"
@@ -62,6 +74,10 @@ export default function AppRouter() {
           path="courses/:courseId/quizzes/:quizId/questions"
           element={<AddQuestionsPage />}
         />
+<<<<<<< HEAD
+=======
+        <Route path="profile" element={<ProfilePage />} />
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 
         <Route
           path="courses/:courseId/quizzes/:quizId/edit"

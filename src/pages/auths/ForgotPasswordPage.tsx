@@ -7,17 +7,30 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+<<<<<<< HEAD
   const [success, setSuccess] = useState(false);
+=======
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+<<<<<<< HEAD
     setSuccess(false);
     setLoading(true);
 
     try {
       await requestPasswordReset({ email });
       setSuccess(true);
+=======
+    setSuccessMessage(null);
+    setLoading(true);
+
+    try {
+      const response = await requestPasswordReset({ email });
+      setSuccessMessage(response.message || "If an account with that email exists, a password reset link has been sent.");
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
     } catch (err: unknown) {
       let message = "Failed to send reset email. Please try again.";
 
@@ -37,7 +50,11 @@ export default function ForgotPasswordPage() {
     }
   };
 
+<<<<<<< HEAD
   if (success) {
+=======
+  if (successMessage) {
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-red-950/20 to-slate-950 flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-slate-900/95 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-red-500/20 text-center">
@@ -45,6 +62,7 @@ export default function ForgotPasswordPage() {
             Check Your Email
           </h2>
           <p className="text-slate-400 mb-6 text-sm sm:text-base">
+<<<<<<< HEAD
             If an account with <strong className="text-white">{email}</strong> exists, we've sent a password reset link.
           </p>
           <p className="text-slate-500 text-xs sm:text-sm mb-6">
@@ -53,6 +71,16 @@ export default function ForgotPasswordPage() {
           <button
             onClick={() => {
               setSuccess(false);
+=======
+            {successMessage}
+          </p>
+          <p className="text-slate-500 text-xs sm:text-sm mb-6">
+            If you do not receive anything, check your spam folder and make sure your email is verified.
+          </p>
+          <button
+            onClick={() => {
+              setSuccessMessage(null);
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
               setEmail("");
             }}
             className="w-full h-11 sm:h-12 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 hover:from-red-600 hover:via-yellow-600 hover:to-orange-600 text-white font-bold rounded-xl shadow-lg transition-all mb-3"

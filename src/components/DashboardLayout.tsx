@@ -34,7 +34,10 @@ export default function DashboardLayout() {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950">
+<<<<<<< HEAD
         {/* Sidebar */}
+=======
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
         <Sidebar className="border-r border-slate-700 bg-slate-900/95 backdrop-blur-xl">
           <SidebarHeader className="px-5 py-5 border-b border-slate-700">
             <Link to="/" className="flex items-center gap-3">
@@ -116,6 +119,7 @@ export default function DashboardLayout() {
           </SidebarContent>
 
           <SidebarFooter className="p-5 border-t border-slate-700 mt-auto">
+<<<<<<< HEAD
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center text-white font-medium text-sm">
                 {user?.username?.[0]?.toUpperCase() || "U"}
@@ -125,6 +129,31 @@ export default function DashboardLayout() {
                 <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
               </div>
             </div>
+=======
+            <Link
+              to="/profile"
+              className="mb-4 flex items-center gap-3 rounded-2xl border border-slate-700 px-3 py-3 transition hover:bg-slate-800/80 hover:border-slate-600"
+            >
+              <div className="w-10 h-10 overflow-hidden rounded-full bg-slate-700 flex items-center justify-center text-white font-medium text-sm ring-1 ring-slate-600">
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={`${user.username}'s profile`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.username?.[0]?.toUpperCase() || "U"
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-white text-sm truncate">
+                  {user?.full_name || user?.username}
+                </p>
+                <p className="text-xs text-slate-400 truncate">@{user?.username}</p>
+                <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
+              </div>
+            </Link>
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 
             <button
               onClick={logout}
@@ -135,7 +164,10 @@ export default function DashboardLayout() {
           </SidebarFooter>
         </Sidebar>
 
+<<<<<<< HEAD
         {/* Main Content */}
+=======
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 border-b border-slate-700 bg-slate-900/80 backdrop-blur-xl flex items-center px-4 md:px-6 z-10">
             <SidebarTrigger className="mr-3 text-slate-400 hover:text-white">
@@ -151,4 +183,8 @@ export default function DashboardLayout() {
       </div>
     </SidebarProvider>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43

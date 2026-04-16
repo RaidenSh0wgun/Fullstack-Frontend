@@ -10,6 +10,18 @@ export interface User {
   username: string;
   email?: string;
   role: Role;
+<<<<<<< HEAD
+=======
+  full_name?: string;
+  bio?: string;
+  sex?: string;
+  avatar_url?: string;
+  email_verified?: boolean;
+  student_id?: string | null;
+  instructor_id?: string | null;
+  courses?: string[];
+  enrolled_courses?: string[];
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export interface AuthTokens {
@@ -41,6 +53,11 @@ export interface Course {
   updated_at?: string;
 }
 
+<<<<<<< HEAD
+=======
+type ListResponse<T> = T[] | { results?: T[] };
+
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 export interface Quiz {
   id: number;
   title: string;
@@ -139,10 +156,20 @@ async function request<T>(
 ): Promise<T> {
   const token = accessToken ?? localStorage.getItem(ACCESS_KEY);
   const headers: HeadersInit = {
+<<<<<<< HEAD
     "Content-Type": "application/json",
     ...(options.headers || {}),
   };
 
+=======
+    ...(options.headers || {}),
+  };
+
+  if (!(options.body instanceof FormData) && !("Content-Type" in headers)) {
+    (headers as Record<string, string>)["Content-Type"] = "application/json";
+  }
+
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
   if (token) {
     (headers as Record<string, string>).Authorization = `Bearer ${token}`;
   }
@@ -153,8 +180,31 @@ async function request<T>(
   });
 
   if (!response.ok) {
+<<<<<<< HEAD
     const text = await response.text();
     throw new Error(text || `Request failed with status ${response.status}`);
+=======
+    let errorMessage = `Request failed with status ${response.status}`;
+    try {
+      const data = await response.json();
+      if (typeof data === "string") {
+        errorMessage = data;
+      } else if (data?.detail) {
+        errorMessage = data.detail;
+      } else if (data?.error) {
+        errorMessage = data.error;
+      } else if (Object.keys(data || {}).length) {
+        errorMessage = JSON.stringify(data);
+      }
+    } catch {
+      const text = await response.text();
+      if (text) {
+        const snippet = text.replace(/\s+/g, " ").trim();
+        errorMessage = snippet.length > 200 ? snippet.slice(0, 200) + "..." : snippet;
+      }
+    }
+    throw new Error(errorMessage || `Request failed with status ${response.status}`);
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
   }
 
   if (response.status === 204) {
@@ -197,9 +247,41 @@ export async function fetchCurrentUser(accessToken?: string): Promise<User> {
   return request<User>("/users/me/", {}, accessToken);
 }
 
+<<<<<<< HEAD
 
 export async function fetchMyCourses(): Promise<Course[]> {
   return request<Course[]>("/courses/my/");
+=======
+export async function updateCurrentUser(payload: FormData | Partial<Pick<User, "username" | "email" | "full_name" | "bio" | "sex">>): Promise<User> {
+  const isFormData = payload instanceof FormData;
+  return request<User>("/users/me/", {
+    method: "PATCH",
+    body: isFormData ? payload : JSON.stringify(payload),
+    headers: isFormData ? {} : { "Content-Type": "application/json" },
+  });
+}
+
+export async function verifyEmailRequest(email: string): Promise<{ message: string }> {
+  return request<{ message: string }>("/auth/email/verify/", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function confirmEmailVerification(
+  uid: string,
+  token: string
+): Promise<{ message: string }> {
+  return request<{ message: string }>("/auth/email/verify/confirm/", {
+    method: "POST",
+    body: JSON.stringify({ uid, token }),
+  });
+}
+
+export async function fetchMyCourses(): Promise<Course[]> {
+  const data = await request<ListResponse<Course>>("/courses/my/");
+  return Array.isArray(data) ? data : data.results ?? [];
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function fetchTeacherCourses(): Promise<Course[]> {
@@ -246,7 +328,12 @@ export async function unenrollCourse(id: number): Promise<Course> {
 export async function fetchQuizzesForCourse(
   courseId: number
 ): Promise<Quiz[]> {
+<<<<<<< HEAD
   return request<Quiz[]>(`/quizzes/?course=${courseId}`);
+=======
+  const data = await request<ListResponse<Quiz>>(`/quizzes/?course=${courseId}`);
+  return Array.isArray(data) ? data : data.results ?? [];
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function createQuiz(
@@ -414,11 +501,21 @@ export async function updateQuizAttempt(
 
 /** For teacher: their courses. For student: use fetchEnrolledCourses for "my courses" or fetchCourses() for all. */
 export async function fetchEnrolledCourses(): Promise<Course[]> {
+<<<<<<< HEAD
   return request<Course[]>("/courses/enrolled/");
 }
 
 export async function fetchCourses(): Promise<Course[]> {
   return request<Course[]>("/courses/");
+=======
+  const data = await request<ListResponse<Course>>("/courses/enrolled/");
+  return Array.isArray(data) ? data : data.results ?? [];
+}
+
+export async function fetchCourses(): Promise<Course[]> {
+  const data = await request<ListResponse<Course>>("/courses/");
+  return Array.isArray(data) ? data : data.results ?? [];
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function fetchCourseDetail(id: number): Promise<Course> {
@@ -432,6 +529,10 @@ export interface AdminManagedUser {
   is_active: boolean;
   role: Role;
   full_name: string;
+<<<<<<< HEAD
+=======
+  email_verified?: boolean;
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function fetchAdminUsers(params?: {

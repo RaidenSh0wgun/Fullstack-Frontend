@@ -26,6 +26,13 @@ type AuthContextValue = {
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
+<<<<<<< HEAD
+=======
+  refreshUser: () => Promise<User | null>;
+  setUserState: (user: User | null) => void;
+  avatarPreviewUrl: string | null;
+  setAvatarPreviewUrl: (url: string | null) => void;
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -34,6 +41,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+<<<<<<< HEAD
+=======
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 
   useEffect(() => {
     const stored = loadStoredAuth();
@@ -64,6 +75,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
   }, []);
 
+<<<<<<< HEAD
+=======
+  const refreshUser = useCallback(async () => {
+    const stored = loadStoredAuth();
+    if (!stored?.access) return null;
+    try {
+      const u = await fetchCurrentUser(stored.access);
+      setUser(u);
+      return u;
+    } catch {
+      clearStoredAuth();
+      setUser(null);
+      setAccessToken(null);
+      return null;
+    }
+  }, []);
+
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
   const register = useCallback(async (payload: RegisterPayload) => {
     const auth = await registerRequest(payload);
     if (!auth?.access || !auth?.refresh) {
@@ -97,8 +126,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+<<<<<<< HEAD
     }),
     [user, accessToken, isLoading, login, register, logout]
+=======
+      refreshUser,
+      setUserState: setUser,
+      avatarPreviewUrl,
+      setAvatarPreviewUrl,
+    }),
+    [user, accessToken, isLoading, login, register, logout, refreshUser, avatarPreviewUrl]
+>>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

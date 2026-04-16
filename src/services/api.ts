@@ -10,8 +10,6 @@ export interface User {
   username: string;
   email?: string;
   role: Role;
-<<<<<<< HEAD
-=======
   full_name?: string;
   bio?: string;
   sex?: string;
@@ -21,7 +19,6 @@ export interface User {
   instructor_id?: string | null;
   courses?: string[];
   enrolled_courses?: string[];
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export interface AuthTokens {
@@ -53,11 +50,8 @@ export interface Course {
   updated_at?: string;
 }
 
-<<<<<<< HEAD
-=======
 type ListResponse<T> = T[] | { results?: T[] };
 
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 export interface Quiz {
   id: number;
   title: string;
@@ -156,12 +150,6 @@ async function request<T>(
 ): Promise<T> {
   const token = accessToken ?? localStorage.getItem(ACCESS_KEY);
   const headers: HeadersInit = {
-<<<<<<< HEAD
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  };
-
-=======
     ...(options.headers || {}),
   };
 
@@ -169,7 +157,6 @@ async function request<T>(
     (headers as Record<string, string>)["Content-Type"] = "application/json";
   }
 
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
   if (token) {
     (headers as Record<string, string>).Authorization = `Bearer ${token}`;
   }
@@ -180,10 +167,6 @@ async function request<T>(
   });
 
   if (!response.ok) {
-<<<<<<< HEAD
-    const text = await response.text();
-    throw new Error(text || `Request failed with status ${response.status}`);
-=======
     let errorMessage = `Request failed with status ${response.status}`;
     try {
       const data = await response.json();
@@ -204,7 +187,6 @@ async function request<T>(
       }
     }
     throw new Error(errorMessage || `Request failed with status ${response.status}`);
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
   }
 
   if (response.status === 204) {
@@ -247,11 +229,6 @@ export async function fetchCurrentUser(accessToken?: string): Promise<User> {
   return request<User>("/users/me/", {}, accessToken);
 }
 
-<<<<<<< HEAD
-
-export async function fetchMyCourses(): Promise<Course[]> {
-  return request<Course[]>("/courses/my/");
-=======
 export async function updateCurrentUser(payload: FormData | Partial<Pick<User, "username" | "email" | "full_name" | "bio" | "sex">>): Promise<User> {
   const isFormData = payload instanceof FormData;
   return request<User>("/users/me/", {
@@ -281,7 +258,6 @@ export async function confirmEmailVerification(
 export async function fetchMyCourses(): Promise<Course[]> {
   const data = await request<ListResponse<Course>>("/courses/my/");
   return Array.isArray(data) ? data : data.results ?? [];
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function fetchTeacherCourses(): Promise<Course[]> {
@@ -328,12 +304,8 @@ export async function unenrollCourse(id: number): Promise<Course> {
 export async function fetchQuizzesForCourse(
   courseId: number
 ): Promise<Quiz[]> {
-<<<<<<< HEAD
-  return request<Quiz[]>(`/quizzes/?course=${courseId}`);
-=======
   const data = await request<ListResponse<Quiz>>(`/quizzes/?course=${courseId}`);
   return Array.isArray(data) ? data : data.results ?? [];
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function createQuiz(
@@ -501,13 +473,6 @@ export async function updateQuizAttempt(
 
 /** For teacher: their courses. For student: use fetchEnrolledCourses for "my courses" or fetchCourses() for all. */
 export async function fetchEnrolledCourses(): Promise<Course[]> {
-<<<<<<< HEAD
-  return request<Course[]>("/courses/enrolled/");
-}
-
-export async function fetchCourses(): Promise<Course[]> {
-  return request<Course[]>("/courses/");
-=======
   const data = await request<ListResponse<Course>>("/courses/enrolled/");
   return Array.isArray(data) ? data : data.results ?? [];
 }
@@ -515,7 +480,6 @@ export async function fetchCourses(): Promise<Course[]> {
 export async function fetchCourses(): Promise<Course[]> {
   const data = await request<ListResponse<Course>>("/courses/");
   return Array.isArray(data) ? data : data.results ?? [];
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function fetchCourseDetail(id: number): Promise<Course> {
@@ -529,10 +493,7 @@ export interface AdminManagedUser {
   is_active: boolean;
   role: Role;
   full_name: string;
-<<<<<<< HEAD
-=======
   email_verified?: boolean;
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
 }
 
 export async function fetchAdminUsers(params?: {

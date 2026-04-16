@@ -30,10 +30,6 @@ export default function StudentsPage() {
         </div>
 
         <div className="grid gap-8 md:grid-cols-[1fr,1.6fr]">
-<<<<<<< HEAD
-          {/* Courses Sidebar */}
-=======
->>>>>>> 6d6a048c90fcde05607cc287cc1fea673ee39f43
           <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50 h-fit">
             <h2 className="text-2xl font-bold text-white mb-6">Your Courses</h2>
 

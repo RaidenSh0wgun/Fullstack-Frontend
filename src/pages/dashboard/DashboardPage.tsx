@@ -1,11 +1,13 @@
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchTeacherCourses,
   fetchCalendarQuizzes,
   fetchPendingQuizzes,
   fetchAttemptedQuizzes,
+  fetchAdminUsers,
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Star, BookOpen, Calendar, Trophy, Clock } from "lucide-react";
@@ -24,27 +26,106 @@ export default function DashboardPage() {
 }
 
 function AdminDashboard() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-10 shadow-2xl shadow-black/30">
-        <div className="text-center mb-10">
-          <div className="mx-auto w-24 h-24 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center border-2 border-white/20 mb-6">
-            <Star className="w-12 h-12 text-yellow-400" />
-          </div>
-          <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-            ADMIN CONTROL CENTER
-          </h1>
-        </div>
+  const { data: adminUsers, isLoading: statsLoading } = useQuery({
+    queryKey: ["admin-users", "stats"],
+    queryFn: () => fetchAdminUsers({ role: "all" }),
+  });
 
-        <div className="bg-slate-800/60 backdrop-blur-sm border border-slate-600/50 rounded-3xl p-10">
-          <p className="text-slate-300 text-xl text-center mb-10">
-            Manage student and teacher accounts from the Admin page.
-          </p>
-          <Link to="/admin" className="block">
-            <Button className="w-full h-14 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 hover:from-red-600 hover:via-yellow-600 hover:to-orange-600 text-white font-bold text-lg rounded-2xl shadow-2xl shadow-red-500/50 hover:shadow-3xl transition-all">
-              OPEN ADMIN PANEL
-            </Button>
-          </Link>
+  const stats = useMemo(() => {
+    const counts = { total: 0, male: 0, female: 0, unspecified: 0 };
+    if (!adminUsers) return counts;
+
+    counts.total = adminUsers.length;
+    for (const user of adminUsers) {
+      const sex = (user.sex || "").toLowerCase();
+      if (sex === "male") counts.male += 1;
+      else if (sex === "female") counts.female += 1;
+      else counts.unspecified += 1;
+    }
+    return counts;
+  }, [adminUsers]);
+
+  const getPercent = (value: number) => (stats.total ? Math.round((value / stats.total) * 100) : 0);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
+      <div className="max-w-6xl mx-auto space-y-10">
+        <div className="rounded-3xl bg-slate-900/50 backdrop-blur-md border border-slate-700/50 p-10 shadow-2xl shadow-black/30">
+          <div className="text-center mb-10">
+            <div className="mx-auto w-24 h-24 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center border-2 border-white/20 mb-6">
+              <Star className="w-12 h-12 text-yellow-400" />
+            </div>
+            <h1 className="text-4xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+              ADMIN CONTROL CENTER
+            </h1>
+          </div>
+
+          <div className="grid gap-8 xl:grid-cols-[1.4fr,0.9fr]">
+            <div className="rounded-3xl bg-slate-950/70 border border-slate-700/50 p-8 shadow-inner shadow-black/20">
+              <div className="flex items-center justify-between mb-8 gap-4">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">Population Overview</h2>
+                  <p className="text-sm text-slate-400 mt-2">
+                    Track male and female user counts across the platform.
+                  </p>
+                </div>
+                <span className="inline-flex items-center rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-200">
+                  {statsLoading ? "Loading..." : `${stats.total} users`}
+                </span>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3 mb-8">
+                <div className="rounded-3xl border border-slate-700/70 bg-slate-900/80 p-5">
+                  <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Male</p>
+                  <p className="mt-3 text-3xl font-bold text-white">{stats.male}</p>
+                  <p className="text-sm text-slate-500">{getPercent(stats.male)}%</p>
+                </div>
+                <div className="rounded-3xl border border-slate-700/70 bg-slate-900/80 p-5">
+                  <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Female</p>
+                  <p className="mt-3 text-3xl font-bold text-white">{stats.female}</p>
+                  <p className="text-sm text-slate-500">{getPercent(stats.female)}%</p>
+                </div>
+                <div className="rounded-3xl border border-slate-700/70 bg-slate-900/80 p-5">
+                  <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Unknown</p>
+                  <p className="mt-3 text-3xl font-bold text-white">{stats.unspecified}</p>
+                  <p className="text-sm text-slate-500">{getPercent(stats.unspecified)}%</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {[
+                  { label: "Male", value: stats.male, color: "bg-blue-500" },
+                  { label: "Female", value: stats.female, color: "bg-pink-500" },
+                  { label: "Unknown", value: stats.unspecified, color: "bg-slate-500" },
+                ].map((slice) => (
+                  <div key={slice.label}>
+                    <div className="flex items-center justify-between text-sm text-slate-300 mb-2">
+                      <span>{slice.label}</span>
+                      <span>{stats.total ? `${getPercent(slice.value)}%` : "0%"}</span>
+                    </div>
+                    <div className="h-4 rounded-full bg-slate-800 overflow-hidden">
+                      <div
+                        className={`${slice.color} h-full rounded-full transition-all duration-300`}
+                        style={{ width: `${getPercent(slice.value)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-slate-950/70 border border-slate-700/50 p-8 shadow-inner shadow-black/20">
+              <h2 className="text-2xl font-semibold text-white mb-4">Admin Tools</h2>
+              <p className="text-slate-400 leading-relaxed mb-8">
+                View and manage student and teacher accounts from the Admin panel. Use the dashboard metrics to keep track of population balance.
+              </p>
+              <Link to="/admin" className="block">
+                <Button className="w-full h-14 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl shadow-xl">
+                  OPEN ADMIN PANEL
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

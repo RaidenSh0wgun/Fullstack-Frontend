@@ -493,6 +493,7 @@ export interface AdminManagedUser {
   is_active: boolean;
   role: Role;
   full_name: string;
+  sex?: string;
   email_verified?: boolean;
 }
 

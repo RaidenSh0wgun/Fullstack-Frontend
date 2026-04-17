@@ -87,7 +87,7 @@
         setAvatarFile(null);
         setAvatarPreview(null);
         setAvatarPreviewUrl(null);
-        setStatus("Profile saved successfully.");
+        setStatus("saved successfully.");
       } catch (err) {
         let errorMessage = "Could not save profile. Please try again.";
         if (err instanceof Error) {
@@ -130,7 +130,7 @@
           <div className="rounded-3xl border border-border bg-card p-8 shadow-sm">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div>
-                <h1 className="text-4xl font-bold text-foreground">{profileTitle}</h1>
+                <h1 className="text-4xl font-bold text-[#1E293B]">{profileTitle}</h1>
                 <p className="mt-2 text-base text-muted-foreground">{profileSubtitle}</p>
               </div>
 
@@ -139,7 +139,7 @@
                   <DialogTrigger asChild>
                     <button
                       type="button"
-                      className="w-28 h-28 rounded-3xl overflow-hidden border-4 border-background shadow-xl bg-slate-800 ring-1 ring-border hover:ring-2 hover:ring-ring transition-all"
+                      className="w-28 h-28 rounded-3xl overflow-hidden border-4 border-background shadow-xl ring-1 ring-border hover:ring-2 hover:ring-ring transition-all"
                     >
                       {currentAvatarSrc ? (
                         <img
@@ -244,7 +244,7 @@
               <Button
                 onClick={handleSave}
                 disabled={loading}
-                className="w-full sm:w-auto py-6 text-lg font-medium"
+                className="w-full sm:w-auto py-6 text-lg font-medium bg-[#6366F1] hover:bg-[#4F46E5]"
               >
                 {loading ? "Saving..." : "Save Profile"}
               </Button>
@@ -262,7 +262,7 @@
             </div>
 
             {status && (
-              <div className="mt-6 rounded-2xl border border-border bg-slate-950/70 p-5 text-sm">
+              <div className="mt-6 rounded-2xl border border-border bg-[#E2E8F0] p-5 text-sm">
                 {status}
               </div>
             )}

@@ -150,7 +150,7 @@ export default function DashboardLayout() {
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-slate-700 bg-slate-900/80 backdrop-blur-xl flex items-center px-4 md:px-6 z-10">
+          <header className="h-14 bg-[#1E293B] backdrop-blur-xl flex items-center px-4 md:px-6 z-10">
             <SidebarTrigger className="mr-3 text-slate-400 hover:text-white">
               <PanelLeft size={20} />
             </SidebarTrigger>

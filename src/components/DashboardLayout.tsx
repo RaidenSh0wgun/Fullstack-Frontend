@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { NotebookPen } from 'lucide-react';
 
 import {
   LayoutDashboard,
@@ -33,20 +34,20 @@ export default function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950">
-        <Sidebar className="border-r border-slate-700 bg-slate-900/95 backdrop-blur-xl">
-          <SidebarHeader className="px-5 py-5 border-b border-slate-700">
+      <div className="flex min-h-screen w-full bg-[#F8FAFC]">
+        <Sidebar className="bg-[#6366F1] backdrop-blur-xl">
+          <SidebarHeader className="px-5 py-5 bg-[#F8FAFC] border-b-3">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-                <span className="text-white text-xl font-bold">Q</span>
+              <div className="w-9 h-9 bg-[#6366F1] rounded-xl flex items-center justify-center">
+                <NotebookPen className="text-white"/>
               </div>
-              <span className="font-black text-2xl bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-black/0">   
+              <span className="font-black text-2xl bg-[#6366F1] bg-clip-text text-black/0">
                 QuizApp
               </span>
             </Link>
           </SidebarHeader>
 
-          <SidebarContent className="px-3 py-5">
+          <SidebarContent className="px-3 py-5 bg-[#F8FAFC]">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/")}>
@@ -61,7 +62,7 @@ export default function DashboardLayout() {
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/courses")}>
-                      <Link to="/courses" className="flex items-center gap-3 text-sm">
+                      <Link to="/courses" className="flex items-center gap-3 text-sm text-[#1E293B]">
                         <BookOpen size={18} />
                         Courses
                       </Link>
@@ -70,7 +71,7 @@ export default function DashboardLayout() {
 
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/calendar")}>
-                      <Link to="/calendar" className="flex items-center gap-3 text-sm">
+                      <Link to="/calendar" className="flex items-center gap-3 text-sm text-[#1E293B]">
                         <Calendar size={18} />
                         Calendar
                       </Link>
@@ -83,7 +84,7 @@ export default function DashboardLayout() {
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/students")}>
-                      <Link to="/students" className="flex items-center gap-3 text-sm">
+                      <Link to="/students" className="flex items-center gap-3 text-sm text-[#1E293B]">
                         <Users size={18} />
                         Students
                       </Link>
@@ -92,7 +93,7 @@ export default function DashboardLayout() {
 
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/scores")}>
-                      <Link to="/scores" className="flex items-center gap-3 text-sm">
+                      <Link to="/scores" className="flex items-center gap-3 text-sm text-[#1E293B]">
                         <BarChart3 size={18} />
                         Quiz Scores
                       </Link>
@@ -104,7 +105,7 @@ export default function DashboardLayout() {
               {user?.role === "admin" && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={isActive("/admin")}>
-                    <Link to="/admin" className="flex items-center gap-3 text-sm">
+                    <Link to="/admin" className="flex items-center gap-3 text-sm text-[#1E293B]">
                       <Shield size={18} />
                       Admin Panel
                     </Link>
@@ -114,12 +115,12 @@ export default function DashboardLayout() {
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="p-5 border-t border-slate-700 mt-auto">
+          <SidebarFooter className="p-5 bg-[#6366F1] mt-auto">
             <Link
               to="/profile"
-              className="mb-4 flex items-center gap-3 rounded-2xl border border-slate-700 px-3 py-3 transition hover:bg-slate-800/80 hover:border-slate-600"
+              className="mb-4 flex items-center gap-3 rounded-2xl bg-[#F8FAFC] px-3 py-3 transition hover:bg-[#e4e5ed]"
             >
-              <div className="w-10 h-10 overflow-hidden rounded-full bg-slate-700 flex items-center justify-center text-white font-medium text-sm ring-1 ring-slate-600">
+              <div className="w-11 h-11 overflow-hidden rounded-full flex items-center justify-center text-white font-medium text-sm">
                 {user?.avatar_url ? (
                   <img
                     src={user.avatar_url}
@@ -130,8 +131,8 @@ export default function DashboardLayout() {
                   user?.username?.[0]?.toUpperCase() || "U"
                 )}
               </div>
-              <div className="min-w-0">
-                <p className="font-medium text-white text-sm truncate">
+              <div className="min-w-0 ">
+                <p className="font-medium text-[#1E293B] text-sm truncate">
                   {user?.full_name || user?.username}
                 </p>
                 <p className="text-xs text-slate-400 truncate">@{user?.username}</p>
@@ -141,7 +142,7 @@ export default function DashboardLayout() {
 
             <button
               onClick={logout}
-              className="w-full rounded-xl border border-slate-600 hover:bg-slate-800 hover:border-slate-500 transition py-2.5 text-sm font-medium text-slate-300 hover:text-white"
+              className="w-full rounded-xl bg-[#F8FAFC] hover:bg-[#FB7185]  transition py-2.5 text-sm font-medium text-[#1E293B] hover:text-white"
             >
               Logout
             </button>
@@ -156,7 +157,7 @@ export default function DashboardLayout() {
             <div className="flex-1" />
           </header>
 
-          <main className="flex-1 overflow-auto p-4 md:p-6">
+          <main className="flex-1 overflow-auto">
             <Outlet />
           </main>
         </div>

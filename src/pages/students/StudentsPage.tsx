@@ -84,7 +84,7 @@ export default function StudentsPage() {
                         {student.full_name || student.username}
                       </p>
                       <p className="text-slate-400 text-sm">
-                        @{student.username} • {student.student_id || "No ID"}
+                        @{student.username} • ID: {student.user}
                       </p>
                     </div>
                     <div className="text-xs uppercase tracking-widest text-emerald-400 font-medium">

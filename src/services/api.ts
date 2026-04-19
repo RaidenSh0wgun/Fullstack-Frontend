@@ -15,8 +15,6 @@ export interface User {
   sex?: string;
   avatar_url?: string;
   email_verified?: boolean;
-  student_id?: string | null;
-  instructor_id?: string | null;
   courses?: string[];
   enrolled_courses?: string[];
 }
@@ -140,7 +138,6 @@ export function clearStoredAuth() {
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
 }
-
 
 
 async function request<T>(
@@ -424,7 +421,6 @@ export interface EnrolledStudent {
   user: number;
   username: string;
   full_name: string;
-  student_id: string;
 }
 
 export async function fetchCourseStudents(courseId: number): Promise<EnrolledStudent[]> {
@@ -493,6 +489,7 @@ export interface AdminManagedUser {
   is_active: boolean;
   role: Role;
   full_name: string;
+  sex?: string;
   email_verified?: boolean;
 }
 

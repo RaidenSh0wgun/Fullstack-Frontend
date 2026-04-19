@@ -83,7 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
   }, []);
-
   const register = useCallback(async (payload: RegisterPayload) => {
     const auth = await registerRequest(payload);
     if (!auth?.access || !auth?.refresh) {

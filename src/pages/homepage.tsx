@@ -205,10 +205,10 @@ function TeacherDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
+    <div className="min-h-screen bg-[#1E293B] p-4 sm:p-8">
       <div className="max-w-7xl mx-auto grid gap-8 md:grid-cols-[1.2fr,1.8fr]">
         {/* Courses Sidebar */}
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50 h-fit">
+        <div className="bg-[#1E293B] rounded-3xl p-8 shadow-2xl shadow-black/50 h-fit">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-white">Your Courses</h2>
             <Dialog open={openCourseDialog} onOpenChange={setOpenCourseDialog}>
@@ -558,7 +558,7 @@ function StudentDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
+    <div className="min-h-screen bg-[#1E293B] p-4 sm:p-8">
       <div className="max-w-7xl mx-auto grid gap-8 md:grid-cols-[1.2fr,1.8fr]">
         {/* Available Courses */}
         <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">

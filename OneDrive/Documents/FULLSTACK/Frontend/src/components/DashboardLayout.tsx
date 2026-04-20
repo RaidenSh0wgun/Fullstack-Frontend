@@ -117,7 +117,7 @@ export default function DashboardLayout() {
 
           <SidebarFooter className="p-5 bg-[#6366F1] mt-auto">
             <Link
-              to="/profile"
+              to="/profileview"
               className="mb-4 flex items-center gap-3 rounded-2xl bg-[#F8FAFC] px-3 py-3 transition hover:bg-[#e4e5ed]"
             >
               <div className="w-11 h-11 overflow-hidden rounded-full flex items-center justify-center text-white font-medium text-sm">

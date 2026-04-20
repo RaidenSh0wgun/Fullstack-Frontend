@@ -237,9 +237,15 @@ export default function CourseDetailPage() {
                   <p className="text-xl text-slate-300 mt-5 max-w-2xl">{course.description}</p>
                 )}
                 {course?.author_name && (
-                  <p className="text-slate-400 mt-4 flex items-center gap-2">
-                    <Users className="w-5 h-5" /> Teacher: <span className="font-medium text-white">{course.author_name}</span>
-                  </p>
+                  <button
+                    onClick={() => navigate(`/user/${course.author_name}/profile`)}
+                    className="text-slate-400 mt-4 flex items-center gap-2 hover:text-yellow-400 transition-colors cursor-pointer"
+                  >
+                    <Users className="w-5 h-5" /> Teacher:{" "}
+                    <span className="font-medium text-white hover:text-yellow-300 underline decoration-transparent hover:decoration-yellow-400">
+                      {course.author_name}
+                    </span>
+                  </button>
                 )}
                 {isTeacher && course?.is_active === false && (
                   <p className="text-amber-400 text-sm mt-3 font-medium">● Deactivated</p>
@@ -611,11 +617,11 @@ function QuizRow({
             </Button>
           </>
         ) : isEnrolled ? (
-          <Link to={`/quiz/${quiz.id}${taken ? "?viewAttempt=true" : ""}`}>
+          <Link to={`/quizview/${quiz.id}${taken ? "?viewAttempt=true" : ""}`}>
             <Button className={`rounded-2xl font-bold px-8 py-6 shadow-lg ${taken 
               ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-black" 
               : "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-orange-500/40"}`}>
-              {taken ? "View Attempt" : "Take Quiz"}
+              {taken ? "View Attempt" : "View Quiz"}
             </Button>
           </Link>
         ) : (

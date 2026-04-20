@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchQuizViewDetail, type QuizViewResponse } from "@/services/api";
@@ -21,10 +21,12 @@ function formatDate(dueDate: string | null | undefined): string | null {
 
 export default function ViewQuizPage() {
   const { quizId } = useParams<{ quizId: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const numericId = useMemo(() => Number(quizId), [quizId]);
+  const viewAttempt = searchParams.get("viewAttempt") === "true";
 
   const { data, isLoading } = useQuery({
     queryKey: ["quiz-view", numericId],
@@ -135,13 +137,31 @@ export default function ViewQuizPage() {
             Back
           </Button>
 
-          {isStudent && !attempted && (
-            <Button
-              onClick={() => navigate(`/quiz/${quiz.id}`)}
-              className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-12 py-6 shadow-xl hover:brightness-110 text-lg"
-            >
-              Start Quiz Now
-            </Button>
+          {isStudent && (
+            attempted ? (
+              viewAttempt ? (
+                <Button
+                  onClick={() => navigate(`/quiz/${quiz.id}?viewAttempt=true`)}
+                  className="bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold rounded-2xl px-12 py-6 shadow-xl text-lg"
+                >
+                  View Attempt
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate(`/quiz/${quiz.id}?viewAttempt=true`)}
+                  className="bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-bold rounded-2xl px-12 py-6 shadow-xl text-lg"
+                >
+                  View Attempt
+                </Button>
+              )
+            ) : (
+              <Button
+                onClick={() => navigate(`/quiz/${quiz.id}`)}
+                className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-12 py-6 shadow-xl hover:brightness-110 text-lg"
+              >
+                Start Quiz Now
+              </Button>
+            )
           )}
         </div>
       </div>

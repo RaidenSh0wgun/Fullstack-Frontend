@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { fetchTeacherCourses, fetchCourseStudents } from "@/services/api";
 
 export default function StudentsPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   const { data: courses } = useQuery({
     queryKey: ["courses"],
@@ -75,9 +77,10 @@ export default function StudentsPage() {
             ) : students?.length ? (
               <div className="space-y-3">
                 {students.map((student) => (
-                  <div
+                  <button
                     key={student.id}
-                    className="flex items-center justify-between bg-slate-950 border border-slate-700 hover:border-yellow-400/30 rounded-2xl px-8 py-6 transition-all"
+                    onClick={() => navigate(`/user/${student.username}/profile`)}
+                    className="w-full text-left flex items-center justify-between bg-slate-950 border border-slate-700 hover:border-yellow-400/50 hover:bg-slate-900/80 rounded-2xl px-8 py-6 transition-all cursor-pointer"
                   >
                     <div>
                       <p className="font-semibold text-white text-lg">
@@ -90,7 +93,7 @@ export default function StudentsPage() {
                     <div className="text-xs uppercase tracking-widest text-emerald-400 font-medium">
                       Enrolled
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             ) : (

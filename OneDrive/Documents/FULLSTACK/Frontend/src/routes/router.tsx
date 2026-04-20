@@ -15,6 +15,8 @@ import StudentsPage from "@/pages/students/StudentsPage";
 import ScoresPage from "@/pages/scores/ScoresPage";
 import AdminPage from "@/pages/admin/AdminPage";
 import ProfilePage from "@/pages/profile/ProfilePage";
+import ProfileViewPage from "@/pages/profile/ProfileViewPage";
+import UserProfilePage from "@/pages/profile/UserProfilePage";
 import ProtectedRoute from "./ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
 import EditQuizLayout from "@/pages/editTabs/EditQuizLayout";
@@ -66,6 +68,8 @@ export default function AppRouter() {
           element={<AddQuestionsPage />}
         />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="profileview" element={<ProfileViewPage />} />
+        <Route path="user/:username/profile" element={<UserProfilePage />} />
 
         <Route
           path="courses/:courseId/quizzes/:quizId/edit"

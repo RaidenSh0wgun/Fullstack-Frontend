@@ -635,10 +635,10 @@ function StudentDashboard() {
                       <p className="text-sm text-slate-400">{quiz.duration_minutes} min</p>
                     </div>
                     <Button
-                      onClick={() => window.location.href = `/quiz/${quiz.id}`}
+                      onClick={() => window.location.href = `/quizview/${quiz.id}`}
                       className={`rounded-2xl ${taken ? "bg-yellow-400 text-black" : "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500"}`}
                     >
-                      {taken ? "View Attempt" : "Take Quiz"}
+                      {taken ? "View Attempt" : "View Quiz"}
                     </Button>
                   </div>
                 );

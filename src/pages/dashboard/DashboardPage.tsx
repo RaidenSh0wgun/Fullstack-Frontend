@@ -273,9 +273,9 @@ function StudentDashboard() {
                         </div>
                       )}
                     </div>
-                    <Link to={`/quiz/${q.id}`}>
+                    <Link to={`/quizview/${q.id}`}>
                       <Button className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold px-8 rounded-2xl">
-                        TAKE QUIZ
+                        VIEW QUIZ
                       </Button>
                     </Link>
                   </div>

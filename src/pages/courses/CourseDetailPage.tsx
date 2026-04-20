@@ -611,11 +611,11 @@ function QuizRow({
             </Button>
           </>
         ) : isEnrolled ? (
-          <Link to={`/quiz/${quiz.id}${taken ? "?viewAttempt=true" : ""}`}>
+          <Link to={`/quizview/${quiz.id}${taken ? "?viewAttempt=true" : ""}`}>
             <Button className={`rounded-2xl font-bold px-8 py-6 shadow-lg ${taken 
               ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-black" 
               : "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-orange-500/40"}`}>
-              {taken ? "View Attempt" : "Take Quiz"}
+              {taken ? "View Attempt" : "View Quiz"}
             </Button>
           </Link>
         ) : (

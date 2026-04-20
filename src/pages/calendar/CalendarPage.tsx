@@ -135,9 +135,9 @@ export default function CalendarPage() {
               );
             }}
             eventClick={(info) => {
-              const courseId = (info.event.extendedProps as any)?.courseId;
-              if (courseId) {
-                navigate(`/courses/${courseId}`);
+              const quizId = info.event.id;
+              if (quizId) {
+                navigate(`/quizview/${quizId}`);
               } else {
                 alert(
                   `${info.event.title}\n${info.event.start?.toLocaleString() ?? ""}`
@@ -169,7 +169,7 @@ export default function CalendarPage() {
               {sortedEvents.map((quiz) => (
                 <div
                   key={quiz.id}
-                  onClick={() => navigate(`/courses/${quiz.course}`)}
+                  onClick={() => navigate(`/quizview/${quiz.id}`)}
                   className={`flex flex-col sm:flex-row gap-4 bg-slate-950 border border-slate-700 hover:border-amber-400/50 rounded-xl p-5 transition-all cursor-pointer group ${
                     quiz.has_attempted ? "hover:bg-slate-900" : ""
                   }`}

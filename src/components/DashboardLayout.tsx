@@ -34,7 +34,7 @@ export default function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-[#F8FAFC]">
+      <div className="flex h-screen w-full overflow-hidden bg-[#F8FAFC]">
         <Sidebar className="bg-[#6366F1] backdrop-blur-xl">
           <SidebarHeader className="px-5 py-5 bg-[#F8FAFC] border-b-3">
             <Link to="/" className="flex items-center gap-3">
@@ -149,15 +149,15 @@ export default function DashboardLayout() {
           </SidebarFooter>
         </Sidebar>
 
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 bg-[#1E293B] backdrop-blur-xl flex items-center px-4 md:px-6 z-10">
+        <div className="flex-1 flex h-full min-w-0 flex-col">
+          <header className="sticky top-0 h-14 bg-[#1E293B] backdrop-blur-xl flex items-center px-4 md:px-6 z-20 shrink-0">
             <SidebarTrigger className="mr-3 text-slate-400 hover:text-white">
               <PanelLeft size={20} />
             </SidebarTrigger>
             <div className="flex-1" />
           </header>
 
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-y-auto">
             <Outlet />
           </main>
         </div>

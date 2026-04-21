@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -42,6 +42,12 @@ export default function CourseDetailPage() {
     queryFn: () => fetchCourseDetail(id),
     enabled: Number.isInteger(id),
   });
+
+  useEffect(() => {
+    if (courseLoaded && course && !isTeacher && !course.is_active) {
+      navigate("/courses");
+    }
+  }, [courseLoaded, course, isTeacher, navigate]);
 
   const enrollMutation = useMutation({
     mutationFn: ({ passkey }: { passkey?: string }) => enrollCourse(id, passkey),

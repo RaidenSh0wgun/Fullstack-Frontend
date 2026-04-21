@@ -1,6 +1,8 @@
   import { useEffect, useMemo, useState } from "react";
+  import { useQuery } from "@tanstack/react-query";
+  import { useNavigate } from "react-router-dom";
   import { useAuth } from "@/context/AuthContext";
-  import { updateCurrentUser, verifyEmailRequest } from "@/services/api";
+  import { updateCurrentUser, verifyEmailRequest, fetchEnrolledCourses, fetchMyCourses, type Course } from "@/services/api";
   import { Button } from "@/components/ui/button";
   import {
     Dialog,
@@ -10,6 +12,7 @@
   } from "@/components/ui/dialog";
 
   export default function ProfilePage() {
+    const navigate = useNavigate();
     const { user, refreshUser, setUserState, setAvatarPreviewUrl } = useAuth();
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
@@ -20,6 +23,13 @@
     const [status, setStatus] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [verifyLoading, setVerifyLoading] = useState(false);
+
+    const isTeacher = user?.role === "teacher";
+    const { data: courseList, isLoading: coursesLoading } = useQuery<Course[]>({
+      queryKey: ["profile-courses", user?.role],
+      queryFn: isTeacher ? fetchMyCourses : fetchEnrolledCourses,
+      enabled: Boolean(user),
+    });
 
     useEffect(() => {
       if (!user) return;
@@ -64,7 +74,6 @@
       return "Manage your student profile, settings, and account details.";
     }, [user]);
 
-    const courseList = user?.role === "teacher" ? user?.courses : user?.enrolled_courses;
     const currentAvatarSrc = avatarPreview || user?.avatar_url;
 
     const handleSave = async () => {
@@ -130,7 +139,16 @@
           <div className="rounded-3xl border border-border bg-card p-8 shadow-sm">
             <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
               <div>
-                <h1 className="text-4xl font-bold text-[#1E293B]">{profileTitle}</h1>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                  <h1 className="text-4xl font-bold text-[#1E293B]">{profileTitle}</h1>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/profileview")}
+                    className="mt-4 sm:mt-0 rounded-2xl border-slate-300 px-5 py-3 text-sm"
+                  >
+                    Back
+                  </Button>
+                </div>
                 <p className="mt-2 text-base text-muted-foreground">{profileSubtitle}</p>
               </div>
 
@@ -203,7 +221,7 @@
                   placeholder={
                     user.role === "teacher"
                       ? "Share a short teacher bio or your teaching focus."
-                      : "Tell us a little about yourself as a student."
+                      : "Tell us a little about yourself."
                   }
                   className="w-full min-h-[140px] rounded-2xl border border-input bg-background px-5 py-4 text-base focus-visible:ring-2 focus-visible:ring-ring"
                 />
@@ -235,7 +253,6 @@
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
-                  <option value="prefer_not_to_say">Prefer not to say</option>
                 </select>
               </div>
             </div>
@@ -268,7 +285,16 @@
             )}
           </div>
 
-          {courseList?.length ? (
+          {coursesLoading ? (
+            <div className="rounded-3xl border border-border bg-card p-8 shadow-sm">
+              <h2 className="text-2xl font-semibold text-foreground">
+                {user.role === "teacher" ? "Your Courses" : "Enrolled Courses"}
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Loading courses...
+              </p>
+            </div>
+          ) : courseList?.length ? (
             <div className="rounded-3xl border border-border bg-card p-8 shadow-sm">
               <h2 className="text-2xl font-semibold text-foreground">
                 {user.role === "teacher" ? "Your Courses" : "Enrolled Courses"}
@@ -279,9 +305,10 @@
                   : "These are the courses you are enrolled in."}
               </p>
               <div className="mt-6 grid gap-4">
-                {courseList.map((title) => (
-                  <div key={title} className="rounded-2xl border border-border bg-background px-5 py-4 text-sm text-foreground">
-                    {title}
+                {courseList.map((course) => (
+                  <div key={course.id} className="rounded-2xl border border-border bg-background px-5 py-4 text-sm text-foreground">
+                    <div className="font-semibold">{course.title}</div>
+                    {course.description && <div className="text-slate-500 mt-1">{course.description}</div>}
                   </div>
                 ))}
               </div>

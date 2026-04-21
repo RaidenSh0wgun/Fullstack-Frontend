@@ -1,11 +1,21 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useState } from "react";
+=======
+import { useState } from "react";
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import {
+<<<<<<< HEAD
   fetchTeacherCourses,
   fetchCourses,
   fetchEnrolledCourses,
+=======
+  fetchTeacherCoursesPage,
+  fetchCoursesPaginated,
+  fetchEnrolledCoursesPage,
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
   createCourse,
   updateCourse,
   deleteCourse,
@@ -35,6 +45,7 @@ export default function CoursesPage() {
   const [courseDescription, setCourseDescription] = useState("");
   const [coursePasskey, setCoursePasskey] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "my">("my");
+<<<<<<< HEAD
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
 
@@ -73,6 +84,25 @@ export default function CoursesPage() {
       setPage(pageCount);
     }
   }, [page, pageCount]);
+=======
+  const [page, setPage] = useState(1);
+
+  const { data: coursesData, isLoading } = useQuery({
+    queryKey: ["courses", viewMode, isTeacher, page],
+    queryFn: () => {
+      if (isTeacher) {
+        return fetchTeacherCoursesPage(page);
+      }
+      if (viewMode === "all") {
+        return fetchCoursesPaginated(page);
+      }
+      return fetchEnrolledCoursesPage(page);
+    },
+  });
+  const courseList = (coursesData?.results ?? []) as Course[];
+  const totalCourses = coursesData?.count ?? courseList.length;
+  const totalPages = Math.max(1, Math.ceil(totalCourses / 20));
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 
   const handleViewCourse = (courseId: number) => {
     navigate(`/courses/${courseId}`);
@@ -89,7 +119,11 @@ export default function CoursesPage() {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
     },
     onError: () => {
+<<<<<<< HEAD
       alert("Failed to create course.");
+=======
+      alert("Failed to create course, a duplicate was found.");
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
     },
   });
 
@@ -141,6 +175,7 @@ export default function CoursesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 py-8 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto space-y-8">
+<<<<<<< HEAD
         <div className="mb-8">
           <div className="text-center mb-6">
             <div className="mx-auto mb-6 w-20 h-20 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-red-500/30">
@@ -272,6 +307,129 @@ export default function CoursesPage() {
                 <div
                   key={course.id}
                   className="group relative rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl p-8 shadow-lg shadow-slate-950/10 hover:shadow-orange-400/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
+=======
+        <div className="text-center mb-12">
+          <div className="mx-auto mb-6 w-20 h-20 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-red-500/30">
+            <span className="text-3xl">📚</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent leading-tight">
+            COURSES
+          </h1>
+          <p className="mt-4 text-xl text-slate-400 max-w-md mx-auto">
+            {isTeacher ? "Manage your courses" : "Browse and join courses"}
+          </p>
+        </div>
+
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+          <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+            {!isTeacher && (
+              <>
+                <Button
+                  size="sm"
+                  variant={viewMode === "all" ? "default" : "outline"}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                    viewMode === "all"
+                      ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-lg"
+                      : "border-slate-600 bg-slate-800/50 text-slate-300 hover:bg-slate-700"
+                  }`}
+                  onClick={() => {
+                    setViewMode("all");
+                    setPage(1);
+                  }}
+                >
+                  All Courses
+                </Button>
+                <Button
+                  size="sm"
+                  variant={viewMode === "my" ? "default" : "outline"}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                    viewMode === "my"
+                      ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-lg"
+                      : "border-slate-600 bg-slate-800/50 text-slate-300 hover:bg-slate-700"
+                  }`}
+                  onClick={() => {
+                    setViewMode("my");
+                    setPage(1);
+                  }}
+                >
+                  My Courses
+                </Button>
+              </>
+            )}
+          </div>
+
+          {isTeacher && (
+            <Dialog open={openCreateCourse} onOpenChange={setOpenCreateCourse}>
+              <DialogTrigger asChild>
+                <Button className="h-12 px-8 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl shadow-xl shadow-orange-500/30 hover:brightness-110 transition-all">
+                  + New Course
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md rounded-3xl">
+                <DialogHeader className="p-8 pb-6">
+                  <div className="w-14 h-14 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl">➕</span>
+                  </div>
+                  <DialogTitle className="text-2xl font-black text-center bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
+                    Create New Course
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-400 text-center mt-2">
+                    Add a new course that students can enroll in.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateCourse} className="p-8 pt-0 space-y-5">
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Course Title *</Label>
+                    <Input
+                      value={courseTitle}
+                      onChange={(e) => setCourseTitle(e.target.value)}
+                      placeholder="e.g. Advanced JavaScript"
+                      className="h-12 rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Description</Label>
+                    <Textarea
+                      value={courseDescription}
+                      onChange={(e) => setCourseDescription(e.target.value)}
+                      placeholder="What will students learn?"
+                      className="min-h-[80px] rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400 resize-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Passkey (optional)</Label>
+                    <Input
+                      type="password"
+                      value={coursePasskey}
+                      onChange={(e) => setCoursePasskey(e.target.value)}
+                      placeholder="Students will use this to join"
+                      className="h-12 rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400"
+                    />
+                  </div>
+                  <DialogFooter className="pt-4">
+                    <Button
+                      type="submit"
+                      className="w-full h-12 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl shadow-xl hover:brightness-110"
+                      disabled={createCourseMutation.isPending || !courseTitle.trim()}
+                    >
+                      {createCourseMutation.isPending ? "Creating..." : "Create Course"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+
+        {courseList.length ? (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {courseList.map((course) => (
+                <div
+                  key={course.id}
+                  className="group relative rounded-3xl border border-slate-700 bg-slate-900/80 backdrop-blur-xl p-8 shadow-2xl shadow-black/50 hover:shadow-red-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
                   onClick={() => handleViewCourse(course.id)}
                 >
                   {isTeacher && course.is_active === false && (
@@ -348,6 +506,7 @@ export default function CoursesPage() {
                 </div>
               ))}
             </div>
+<<<<<<< HEAD
 
             {pageCount > 1 && (
               <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white/10 rounded-2xl p-6 border border-white/10">
@@ -380,11 +539,36 @@ export default function CoursesPage() {
               </div>
             )}
           </>
+=======
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                className="rounded-xl border-slate-600 bg-slate-800/60 text-slate-200 hover:bg-slate-700"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page <= 1}
+              >
+                Previous
+              </Button>
+              <span className="text-slate-300 text-sm">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                className="rounded-xl border-slate-600 bg-slate-800/60 text-slate-200 hover:bg-slate-700"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={page >= totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
         ) : (
           <div className="text-center py-24">
             <div className="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-red-500/20 via-yellow-400/10 to-orange-500/20 rounded-3xl flex items-center justify-center border-2 border-dashed border-slate-700">
               <span className="text-5xl opacity-40">📚</span>
             </div>
+<<<<<<< HEAD
             <h2 className="text-2xl font-bold text-slate-400 mb-4">
               {searchQuery.trim()
                 ? "No courses match your search"
@@ -396,6 +580,11 @@ export default function CoursesPage() {
                 : viewMode === "all"
                 ? "No courses available yet."
                 : "You are not enrolled in any courses yet."}
+=======
+            <h2 className="text-2xl font-bold text-slate-400 mb-4">No courses yet</h2>
+            <p className="text-slate-500 max-w-md mx-auto">
+              {viewMode === "all" ? "No courses available yet." : "You are not enrolled in any courses yet."}
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
             </p>
             {isTeacher && (
               <Button 

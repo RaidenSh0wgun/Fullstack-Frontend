@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
+=======
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 import { fetchTeacherCourses, fetchCourseStudents } from "@/services/api";
 
 export default function StudentsPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+<<<<<<< HEAD
   const navigate = useNavigate();
+=======
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 
   const { data: courses } = useQuery({
     queryKey: ["courses"],
@@ -77,10 +83,16 @@ export default function StudentsPage() {
             ) : students?.length ? (
               <div className="space-y-3">
                 {students.map((student) => (
+<<<<<<< HEAD
                   <button
                     key={student.id}
                     onClick={() => navigate(`/user/${student.username}/profile`)}
                     className="w-full text-left flex items-center justify-between bg-slate-950 border border-slate-700 hover:border-yellow-400/50 hover:bg-slate-900/80 rounded-2xl px-8 py-6 transition-all cursor-pointer"
+=======
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between bg-slate-950 border border-slate-700 hover:border-yellow-400/30 rounded-2xl px-8 py-6 transition-all"
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
                   >
                     <div>
                       <p className="font-semibold text-white text-lg">
@@ -93,7 +105,11 @@ export default function StudentsPage() {
                     <div className="text-xs uppercase tracking-widest text-emerald-400 font-medium">
                       Enrolled
                     </div>
+<<<<<<< HEAD
                   </button>
+=======
+                  </div>
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
                 ))}
               </div>
             ) : (

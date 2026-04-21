@@ -11,7 +11,10 @@ import {
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+<<<<<<< HEAD
 import { useAntiCheating } from "@/hooks/use-anti-cheating";
+=======
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 
 function timerStorageKey(quizId: number) {
   return `quiz_timer_remaining_${quizId}`;
@@ -119,6 +122,7 @@ export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [submittedScore, setSubmittedScore] = useState<number | null>(null);
   const [clientScore, setClientScore] = useState<number | null>(null);
+<<<<<<< HEAD
   const [isLeaving, setIsLeaving] = useState(false);
 
   useAntiCheating({
@@ -136,6 +140,8 @@ export default function QuizPage() {
     isLeaving,
     timeLeft,
   });
+=======
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 
   const submitMutation = useMutation({
     mutationFn: () => submitQuizAnswers(numericId, answers),
@@ -289,7 +295,12 @@ export default function QuizPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
+<<<<<<< HEAD
       <div className="max-w-4xl mx-auto space-y-10 relative z-10">
+=======
+      <div className="max-w-4xl mx-auto space-y-10">
+        {/* Header */}
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <button
@@ -306,6 +317,7 @@ export default function QuizPage() {
             )}
           </div>
 
+<<<<<<< HEAD
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             {!showAttempt && timeLeft !== null && (
               <div className="bg-slate-900/80 border border-slate-700 rounded-2xl px-8 py-4 text-center">
@@ -319,6 +331,19 @@ export default function QuizPage() {
         </div>
 
 
+=======
+          {!showAttempt && timeLeft !== null && (
+            <div className="bg-slate-900/80 border border-slate-700 rounded-2xl px-8 py-4 text-center">
+              <div className="text-xs text-slate-400">Time Remaining</div>
+              <div className={`text-3xl font-bold tabular-nums ${isTimeUp ? "text-red-500" : "text-white"}`}>
+                {formatTime(Math.max(timeLeft, 0))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Progress / Score */}
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
         {!showAttempt && (
           <div className="text-slate-400 text-sm">
             {Object.keys(answers).length} of {questions.length} questions answered
@@ -345,6 +370,10 @@ export default function QuizPage() {
           </div>
         )}
 
+<<<<<<< HEAD
+=======
+        {/* Questions */}
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
         <div className="space-y-8">
           {questions.map((q, index) => {
             const answer = answers[q.id];
@@ -449,16 +478,25 @@ export default function QuizPage() {
           })}
         </div>
 
+<<<<<<< HEAD
+=======
+        {/* Bottom Actions */}
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
         <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6">
           <Button
             variant="outline"
             onClick={() => {
+<<<<<<< HEAD
               setIsLeaving(true);
               if (!showAttempt && timeLeft !== null && timeLeft > 0) {
                 if (!confirm("Leave the quiz? The timer will continue.")) {
                   setIsLeaving(false);
                   return;
                 }
+=======
+              if (!showAttempt && timeLeft !== null && timeLeft > 0) {
+                if (!confirm("Leave the quiz? The timer will continue.")) return;
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
               }
               if (quiz?.course) {
                 navigate(`/courses/${quiz.course}`);

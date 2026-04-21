@@ -1,5 +1,9 @@
 import { useMemo } from "react";
+<<<<<<< HEAD
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+=======
+import { useNavigate, useParams } from "react-router-dom";
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchQuizViewDetail, type QuizViewResponse } from "@/services/api";
@@ -21,12 +25,18 @@ function formatDate(dueDate: string | null | undefined): string | null {
 
 export default function ViewQuizPage() {
   const { quizId } = useParams<{ quizId: string }>();
+<<<<<<< HEAD
   const [searchParams] = useSearchParams();
+=======
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const numericId = useMemo(() => Number(quizId), [quizId]);
+<<<<<<< HEAD
   const viewAttempt = searchParams.get("viewAttempt") === "true";
+=======
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 
   const { data, isLoading } = useQuery({
     queryKey: ["quiz-view", numericId],
@@ -137,6 +147,7 @@ export default function ViewQuizPage() {
             Back
           </Button>
 
+<<<<<<< HEAD
           {isStudent && (
             attempted ? (
               viewAttempt ? (
@@ -162,6 +173,15 @@ export default function ViewQuizPage() {
                 Start Quiz Now
               </Button>
             )
+=======
+          {isStudent && !attempted && (
+            <Button
+              onClick={() => navigate(`/quiz/${quiz.id}`)}
+              className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl px-12 py-6 shadow-xl hover:brightness-110 text-lg"
+            >
+              Start Quiz Now
+            </Button>
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
           )}
         </div>
       </div>

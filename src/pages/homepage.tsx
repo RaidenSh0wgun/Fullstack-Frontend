@@ -61,6 +61,7 @@ function TeacherDashboard() {
     queryFn: () => fetchQuizzesForCourse(selectedCourseId as number),
     enabled: selectedCourseId !== null,
   });
+<<<<<<< HEAD
   const [coursePage, setCoursePage] = useState(1);
   const coursePageSize = 6;
   const coursePageCount = Math.max(1, Math.ceil((courses?.length ?? 0) / coursePageSize));
@@ -69,6 +70,9 @@ function TeacherDashboard() {
   useEffect(() => {
     setCoursePage(1);
   }, [courses]);
+=======
+
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
   const [openCourseDialog, setOpenCourseDialog] = useState(false);
   const [courseTitle, setCourseTitle] = useState("");
   const [courseDescription, setCourseDescription] = useState("");
@@ -530,6 +534,7 @@ function StudentDashboard() {
     queryFn: fetchTeacherCourses,
   });
 
+<<<<<<< HEAD
   const [coursePage, setCoursePage] = useState(1);
   const coursePageSize = 6;
   const coursePageCount = Math.max(1, Math.ceil((courses?.length ?? 0) / coursePageSize));
@@ -539,6 +544,8 @@ function StudentDashboard() {
     setCoursePage(1);
   }, [courses]);
 
+=======
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
   const { data: quizzes, isLoading: quizzesLoading } = useQuery({
     queryKey: ["student-quizzes", selectedCourseId],
     queryFn: () => fetchQuizzesForCourse(selectedCourseId as number),

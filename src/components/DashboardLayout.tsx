@@ -117,7 +117,11 @@ export default function DashboardLayout() {
 
           <SidebarFooter className="p-5 bg-[#6366F1] mt-auto">
             <Link
+<<<<<<< HEAD
               to="/profileview"
+=======
+              to="/profile"
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
               className="mb-4 flex items-center gap-3 rounded-2xl bg-[#F8FAFC] px-3 py-3 transition hover:bg-[#e4e5ed]"
             >
               <div className="w-11 h-11 overflow-hidden rounded-full flex items-center justify-center text-white font-medium text-sm">
@@ -149,8 +153,13 @@ export default function DashboardLayout() {
           </SidebarFooter>
         </Sidebar>
 
+<<<<<<< HEAD
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
           <header className="sticky top-0 z-20 h-14 bg-[#1E293B] backdrop-blur-xl flex items-center px-4 md:px-6 flex-shrink-0">
+=======
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 bg-[#1E293B] backdrop-blur-xl flex items-center px-4 md:px-6 z-10">
+>>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
             <SidebarTrigger className="mr-3 text-slate-400 hover:text-white">
               <PanelLeft size={20} />
             </SidebarTrigger>

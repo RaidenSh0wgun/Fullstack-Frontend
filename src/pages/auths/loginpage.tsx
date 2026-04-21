@@ -3,10 +3,7 @@ import type { FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-<<<<<<< HEAD
 import { Eye, EyeOff } from "lucide-react";
-=======
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 
 export default function LoginPage() {
   const { login, register } = useAuth();
@@ -19,10 +16,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-<<<<<<< HEAD
   const [showPassword, setShowPassword] = useState(false);
-=======
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -147,7 +141,6 @@ export default function LoginPage() {
             <label className="text-xs sm:text-sm font-medium text-slate-300" htmlFor="password">
               Password
             </label>
-<<<<<<< HEAD
             <div className="relative">
               <input
                 id="password"
@@ -168,19 +161,6 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-=======
-            <input
-              id="password"
-              type="password"
-              autoComplete={
-                mode === "login" ? "current-password" : "new-password"
-              }
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-red-500/30 bg-slate-800/50 px-3 py-2.5 sm:py-3 text-sm text-white outline-none focus-visible:ring-2 focus-visible:ring-yellow-400/50 transition-all"
-            />
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
           </div>
 
           {error && (

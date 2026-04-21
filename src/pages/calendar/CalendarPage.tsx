@@ -135,15 +135,9 @@ export default function CalendarPage() {
               );
             }}
             eventClick={(info) => {
-<<<<<<< HEAD
-              const courseId = (info.event.extendedProps as any)?.courseId;
-              if (courseId) {
-                navigate(`/quizview/${info.event.id}`);
-=======
               const quizId = info.event.id;
               if (quizId) {
                 navigate(`/quizview/${quizId}`);
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
               } else {
                 alert(
                   `${info.event.title}\n${info.event.start?.toLocaleString() ?? ""}`

@@ -237,21 +237,9 @@ export default function CourseDetailPage() {
                   <p className="text-xl text-slate-300 mt-5 max-w-2xl">{course.description}</p>
                 )}
                 {course?.author_name && (
-<<<<<<< HEAD
-                  <button
-                    onClick={() => navigate(`/user/${course.author_name}/profile`)}
-                    className="text-slate-400 mt-4 flex items-center gap-2 hover:text-yellow-400 transition-colors cursor-pointer"
-                  >
-                    <Users className="w-5 h-5" /> Teacher:{" "}
-                    <span className="font-medium text-white hover:text-yellow-300 underline decoration-transparent hover:decoration-yellow-400">
-                      {course.author_name}
-                    </span>
-                  </button>
-=======
                   <p className="text-slate-400 mt-4 flex items-center gap-2">
                     <Users className="w-5 h-5" /> Teacher: <span className="font-medium text-white">{course.author_name}</span>
                   </p>
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
                 )}
                 {isTeacher && course?.is_active === false && (
                   <p className="text-amber-400 text-sm mt-3 font-medium">● Deactivated</p>

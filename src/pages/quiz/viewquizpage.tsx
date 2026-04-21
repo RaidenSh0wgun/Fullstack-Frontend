@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, XCircle, Ban, CheckCircle, Play } from "lucide-react";
 
 import { fetchQuizViewDetail, type QuizViewResponse } from "@/services/api";
 import { Button } from "@/components/ui/button";
@@ -75,9 +76,9 @@ export default function ViewQuizPage() {
           )}
         </div>
 
-        {/* Quiz Info Card */}
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {/* Quiz Info Card - FIRST BOX - THINNER */}
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-6 shadow-2xl shadow-black/50">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
             <div>
               <p className="text-xs uppercase tracking-widest text-slate-400">Duration</p>
               <p className="text-2xl font-semibold text-white mt-1">
@@ -97,13 +98,42 @@ export default function ViewQuizPage() {
               </p>
             </div>
           </div>
+          
+          {/* Anti-Cheating Warning Inside FIRST Box */}
+          <div className="bg-amber-950/60 border border-amber-500/50 rounded-2xl p-5">
+            <div className="flex items-start gap-3 mb-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+              <h4 className="font-semibold text-amber-300 text-sm uppercase tracking-wide">
+                Anti-Cheating Protection Active
+              </h4>
+            </div>
+            
+            <div className="space-y-1.5 text-amber-200 text-sm leading-relaxed">
+              <div className="flex items-start gap-2">
+                <XCircle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                <span>One attempt only - no retries</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Ban className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                <span>Tab switching, copy-paste, screenshots = auto-submit</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Ban className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                <span>Suspicious activity triggers immediate termination</span>
+              </div>
+            </div>
+            
+            <p className="text-amber-300 text-xs mt-3 font-medium border-t border-amber-800/50 pt-2">
+              Violations result in score invalidation
+            </p>
+          </div>
         </div>
 
         {/* Status Card */}
         {attempted ? (
           <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-3xl p-10 text-center shadow-xl">
             <div className="w-16 h-16 mx-auto mb-6 bg-emerald-500/20 rounded-2xl flex items-center justify-center">
-              <span className="text-4xl">✅</span>
+              <CheckCircle className="w-10 h-10 text-emerald-400" />
             </div>
             <h2 className="text-3xl font-bold text-emerald-400 mb-2">Quiz Completed</h2>
             <div className="text-5xl font-black text-white mt-4">
@@ -116,7 +146,7 @@ export default function ViewQuizPage() {
         ) : (
           <div className="bg-slate-900/80 border border-slate-700/50 rounded-3xl p-10 text-center shadow-2xl">
             <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center">
-              <span className="text-4xl">📝</span>
+              <Play className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-white mb-3">Ready to Take the Quiz?</h2>
             <p className="text-slate-400 max-w-md mx-auto">

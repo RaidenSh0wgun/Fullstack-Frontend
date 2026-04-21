@@ -11,6 +11,7 @@ import {
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useAntiCheating } from "@/hooks/use-anti-cheating";
 
 function timerStorageKey(quizId: number) {
   return `quiz_timer_remaining_${quizId}`;
@@ -118,6 +119,7 @@ export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [submittedScore, setSubmittedScore] = useState<number | null>(null);
   const [clientScore, setClientScore] = useState<number | null>(null);
+  const [hasAutoSubmitted, setHasAutoSubmitted] = useState(false);
 
   const submitMutation = useMutation({
     mutationFn: () => submitQuizAnswers(numericId, answers),
@@ -141,8 +143,13 @@ export default function QuizPage() {
 
       navigate(`/quiz/${numericId}?viewAttempt=true`, { replace: true });
     },
-    onError: () => {
-      alert("Failed to submit quiz. Please try again.");
+    onError: (error: unknown) => {
+      setHasAutoSubmitted(false);
+      const errorMessage =
+        error instanceof Error && error.message
+          ? error.message
+          : "Failed to submit quiz. Please try again.";
+      alert(errorMessage);
     },
   });
 
@@ -249,6 +256,19 @@ export default function QuizPage() {
   const isTimeUp = (timeLeft ?? 0) <= 0;
   const canEdit = !isTimeUp && submittedScore === null && !showAttempt;
   const finalScore = submittedScore ?? clientScore;
+  const isLeavingQuiz = showAttempt || submittedScore !== null || submitMutation.isPending;
+
+  useAntiCheating({
+    quizId: numericId,
+    timeLeft,
+    isLeaving: isLeavingQuiz,
+    autoSubmitOnCheat: true,
+    onAutoSubmit: () => {
+      if (!canEdit || hasAutoSubmitted || submitMutation.isPending) return;
+      setHasAutoSubmitted(true);
+      submitMutation.mutate();
+    },
+  });
 
   const questionCorrectness = useMemo(() => {
     if (!showAttempt || !questions.length) return {};

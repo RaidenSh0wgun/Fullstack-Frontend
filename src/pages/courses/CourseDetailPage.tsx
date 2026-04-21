@@ -244,7 +244,13 @@ export default function CourseDetailPage() {
                 )}
                 {course?.author_name && (
                   <p className="text-slate-400 mt-4 flex items-center gap-2">
-                    <Users className="w-5 h-5" /> Teacher: <span className="font-medium text-white">{course.author_name}</span>
+                    <Users className="w-5 h-5" /> Teacher:{" "}
+                    <Link
+                      to={`/users/${course.author_name}`}
+                      className="font-medium text-white hover:text-yellow-400 transition-colors"
+                    >
+                      {course.author_name}
+                    </Link>
                   </p>
                 )}
                 {isTeacher && course?.is_active === false && (

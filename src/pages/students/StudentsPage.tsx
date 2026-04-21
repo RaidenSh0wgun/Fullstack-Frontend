@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTeacherCourses, fetchCourseStudents } from "@/services/api";
+import { Link } from "react-router-dom";
 
 export default function StudentsPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
@@ -80,9 +81,12 @@ export default function StudentsPage() {
                     className="flex items-center justify-between bg-slate-950 border border-slate-700 hover:border-yellow-400/30 rounded-2xl px-8 py-6 transition-all"
                   >
                     <div>
-                      <p className="font-semibold text-white text-lg">
+                      <Link
+                        to={`/users/${student.username}`}
+                        className="font-semibold text-white text-lg hover:text-yellow-400 transition-colors"
+                      >
                         {student.full_name || student.username}
-                      </p>
+                      </Link>
                       <p className="text-slate-400 text-sm">
                         @{student.username} • ID: {student.user}
                       </p>

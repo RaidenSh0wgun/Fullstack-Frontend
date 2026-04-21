@@ -29,10 +29,11 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
 
   const tabSwitchCountRef = useRef(0);
   const lastTabSwitchTimeRef = useRef(0);
+  const autoSubmittedRef = useRef(false);
   const TAB_SWITCH_WARNING_LIMIT = 3;
 
   const getCheatingDelay = useCallback(() => {
-    if (timeLeft === null || timeLeft <= 0) return 1000;
+    if (timeLeft == null || timeLeft <= 0) return 1000;
     if (timeLeft <= 300) return 200; 
     if (timeLeft <= 600) return 500; 
     return 1000;
@@ -146,15 +147,15 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       reportCheating('tab_switch');
 
       if (count >= TAB_SWITCH_WARNING_LIMIT) {
-        if (autoSubmitOnCheat && onAutoSubmit) {
+        showWarning(`${TAB_SWITCH_WARNING_LIMIT}/${TAB_SWITCH_WARNING_LIMIT}: Repeated tab/app switching detected. Your quiz will now be auto-submitted.`);
+        if (autoSubmitOnCheat && onAutoSubmit && !autoSubmittedRef.current) {
+          autoSubmittedRef.current = true;
           onAutoSubmit();
-          return;
         }
-        showWarning(`${count}/${TAB_SWITCH_WARNING_LIMIT}: Repeated tab switching detected. The quiz will now be auto-submitted.`);
         return;
       }
 
-      showWarning(`${count}/${TAB_SWITCH_WARNING_LIMIT}: Switching tabs or using Alt+Tab is blocked during the quiz. Please stay on this tab.`);
+      showWarning(`${count}/${TAB_SWITCH_WARNING_LIMIT}: Switching tabs or using Alt+Tab is not allowed during the quiz.`);
       window.focus();
       if (document.body) {
         (document.body as HTMLElement).focus();

@@ -66,12 +66,12 @@
 
     const profileSubtitle = useMemo(() => {
       if (user?.role === "teacher") {
-        return "Manage your teacher profile, courses, and account settings.";
+        return "View and update your teacher profile, courses, and account settings.";
       }
       if (user?.role === "admin") {
-        return "Manage your admin profile, settings, and account details.";
+        return "View and update your admin profile, settings, and account details.";
       }
-      return "Manage your student profile, settings, and account details.";
+      return "View and update your student profile, settings, and account details.";
     }, [user]);
 
     const currentAvatarSrc = avatarPreview || user?.avatar_url;

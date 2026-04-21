@@ -1,0 +1,241 @@
+| OQAE - Online quiz and exam (with management system)/| → public/
+
+|	| ↦ vite.svg
+
+|	|
+
+|	|
+
+| → src/
+
+|	↦ assets/
+
+|	|	| ↦react.svg
+
+|	|	| ↦  images/
+
+|	|	| ↦ icons/logo
+
+|	| ↦ App.css
+
+|	| ↦ App.tsx
+
+|	| ↦ Index.tsx
+
+|	| ↦ main.tsx
+
+|	|
+
+|	|
+
+| → components/
+
+|	| → tailwindcss/
+
+|	| → shadcn/
+
+|	| → routes/
+
+|	| →ui/
+
+|	| →	| ↦ button/
+
+|	|	| ↦ card/
+
+|	|	| ↦ input/
+
+|	|	| ↦ models/
+
+|	|	| ↦ body/
+
+|	|	| ↦ hover/
+
+|	|	| ↦ padding/
+
+|	|	| ↦ border/
+
+|	|	| ↦ Image/
+
+|	|	| ↦ Text/textinput/
+
+|	|	| ↦ flartlist/sectionlist/
+
+|	| → layout/	
+
+|	|	| ↦ header/footer/
+
+|	|	| ↦ sidebar/
+
+|	|	| ↦ mainlayout/
+
+|	| → feature/ 
+
+|	|
+
+|	|
+
+| → hooks/
+
+|
+
+|
+
+| → lib/
+
+|	| ↦ etc… 
+
+|	| 
+
+|	| 
+
+|	| 
+
+|	| 
+
+|	|
+
+|	|
+
+|	|
+
+| → pages/
+
+|	| ↦ admin/
+
+|	|	| ↦ bugs
+
+|	|	| ↦ dashboard
+
+|	|	| ↦ progress
+
+|	| ↦ teacher/
+
+|	|	| ↦ dashboard
+
+|	|	| ↦ quizzes
+
+|	|	| ↦ results/scores
+
+|	|	| ↦ tracker/progress
+
+|	|	| ↦ student list
+
+|	| ↦ create, edit, grade
+
+|	| ↦  student/
+
+|	|	| ↦ log in
+
+|	|	| ↦ home page
+
+|	|	| ↦ courses
+
+|	|	| ↦ deadlines
+
+|	|	| ↦ quizzes
+
+|	|	| ↦ scores
+
+| →Index/	|
+
+|		|
+
+|		|
+
+|		|
+
+| → routes/	|
+
+|	| ↦ backend - Django restframework
+
+|	| ↦ api / postman
+
+|	| ↦ Django restframework-simplejwt
+
+|	|
+
+| → services/
+
+|
+
+| → Online Quiz and Exam (with management system)/
+
+| → api/
+
+|	| ↦ quizzes-exam/
+
+|	|	| ↦ use get exam
+
+|	|	| ↦ use post exam
+
+|	|	| ↦ use delete exam
+
+|	|	| ↦ use update exam
+
+|	|	|
+
+|	|	|
+
+| → auth/ 	|
+
+|	| ↦ django restframework-simplejwt
+
+|	| ↦ token
+
+|	| ↦ etc…
+
+|	|
+
+|	|
+
+| → types/
+
+|	| ↦ api.types.tsx
+
+|	| ↦ route.types.tsx
+
+|	| ↦  pages.type.tsx
+
+|	| ↦ components.type.tsx
+
+|	| ↦ etc…
+
+|	|
+
+|	|
+
+|	|
+
+|	| → app.css
+
+|	| → main.tsx
+
+|	| → index.css 
+
+|	| → app.tsx
+
+|	| → etc… 
+
+|	|
+
+|	|
+
+| 	|
+
+| → .gitinore
+
+| → eslint.config.js
+
+| → index.html
+
+| → package-lock.json
+
+| → package.json
+
+| → README.md
+
+| → tsconfig.app.json
+
+| → tsconfig.node.json
+
+| → vite.config.ts

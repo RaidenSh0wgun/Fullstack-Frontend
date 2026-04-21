@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# OneDrive
+OneDrive/
+*.lnk
+desktop.ini
+Thumbs.db
+*.tmp
+*.log
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

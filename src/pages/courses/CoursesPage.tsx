@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import {
-  fetchTeacherCourses,
-  fetchCourses,
-  fetchEnrolledCourses,
+  fetchTeacherCoursesPage,
+  fetchCoursesPaginated,
+  fetchEnrolledCoursesPage,
   createCourse,
   updateCourse,
   deleteCourse,
@@ -35,20 +35,23 @@ export default function CoursesPage() {
   const [courseDescription, setCourseDescription] = useState("");
   const [coursePasskey, setCoursePasskey] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "my">("my");
+  const [page, setPage] = useState(1);
 
-  const { data: courses, isLoading } = useQuery({
-    queryKey: ["courses", viewMode, isTeacher],
+  const { data: coursesData, isLoading } = useQuery({
+    queryKey: ["courses", viewMode, isTeacher, page],
     queryFn: () => {
       if (isTeacher) {
-        return fetchTeacherCourses();
+        return fetchTeacherCoursesPage(page);
       }
       if (viewMode === "all") {
-        return fetchCourses();
+        return fetchCoursesPaginated(page);
       }
-      return fetchEnrolledCourses();
+      return fetchEnrolledCoursesPage(page);
     },
   });
-  const courseList = (courses ?? []) as Course[];
+  const courseList = (coursesData?.results ?? []) as Course[];
+  const totalCourses = coursesData?.count ?? courseList.length;
+  const totalPages = Math.max(1, Math.ceil(totalCourses / 20));
 
   const handleViewCourse = (courseId: number) => {
     navigate(`/courses/${courseId}`);
@@ -65,7 +68,7 @@ export default function CoursesPage() {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
     },
     onError: () => {
-      alert("Failed to create course.");
+      alert("Failed to create course, a duplicate was found.");
     },
   });
 
@@ -141,7 +144,10 @@ export default function CoursesPage() {
                       ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-lg"
                       : "border-slate-600 bg-slate-800/50 text-slate-300 hover:bg-slate-700"
                   }`}
-                  onClick={() => setViewMode("all")}
+                  onClick={() => {
+                    setViewMode("all");
+                    setPage(1);
+                  }}
                 >
                   All Courses
                 </Button>
@@ -153,7 +159,10 @@ export default function CoursesPage() {
                       ? "bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white shadow-lg"
                       : "border-slate-600 bg-slate-800/50 text-slate-300 hover:bg-slate-700"
                   }`}
-                  onClick={() => setViewMode("my")}
+                  onClick={() => {
+                    setViewMode("my");
+                    setPage(1);
+                  }}
                 >
                   My Courses
                 </Button>
@@ -226,86 +235,109 @@ export default function CoursesPage() {
         </div>
 
         {courseList.length ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {courseList.map((course) => (
-              <div
-                key={course.id}
-                className="group relative rounded-3xl border border-slate-700 bg-slate-900/80 backdrop-blur-xl p-8 shadow-2xl shadow-black/50 hover:shadow-red-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
-                onClick={() => handleViewCourse(course.id)}
-              >
-                {isTeacher && course.is_active === false && (
-                  <div className="absolute top-4 right-4 bg-amber-500/20 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-medium text-amber-300">
-                    Deactivated
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {courseList.map((course) => (
+                <div
+                  key={course.id}
+                  className="group relative rounded-3xl border border-slate-700 bg-slate-900/80 backdrop-blur-xl p-8 shadow-2xl shadow-black/50 hover:shadow-red-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
+                  onClick={() => handleViewCourse(course.id)}
+                >
+                  {isTeacher && course.is_active === false && (
+                    <div className="absolute top-4 right-4 bg-amber-500/20 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-medium text-amber-300">
+                      Deactivated
+                    </div>
+                  )}
+
+                  <div className="w-14 h-14 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                    <span className="text-3xl">📖</span>
                   </div>
-                )}
 
-                <div className="w-14 h-14 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
-                  <span className="text-3xl">📖</span>
-                </div>
+                  <h2 className="text-2xl font-black text-white mb-4">
+                    {course.title}
+                  </h2>
 
-                <h2 className="text-2xl font-black text-white mb-4">
-                  {course.title}
-                </h2>
+                  {course.description && (
+                    <p className="text-slate-400 mb-8 leading-relaxed line-clamp-3">
+                      {course.description}
+                    </p>
+                  )}
 
-                {course.description && (
-                  <p className="text-slate-400 mb-8 leading-relaxed line-clamp-3">
-                    {course.description}
-                  </p>
-                )}
-
-                {isTeacher ? (
-                  <div className="flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
-                    <Link
-                      to={`/courses/${course.id}`}
-                      className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold py-3 px-6 rounded-2xl text-center shadow-lg hover:brightness-110 transition-all"
+                  {isTeacher ? (
+                    <div className="flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
+                      <Link
+                        to={`/courses/${course.id}`}
+                        className="bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold py-3 px-6 rounded-2xl text-center shadow-lg hover:brightness-110 transition-all"
+                      >
+                        View Course
+                      </Link>
+                      <div className="flex gap-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 rounded-2xl border-slate-600 hover:bg-slate-800"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCourseMutation.mutate({
+                              id: course.id,
+                              is_active: !(course.is_active ?? true),
+                            });
+                          }}
+                          disabled={toggleCourseMutation.isPending}
+                        >
+                          {(course.is_active ?? true) ? "Deactivate" : "Reactivate"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="flex-1 rounded-2xl text-red-400 hover:text-red-500 hover:bg-red-500/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm(`Delete course "${course.title}" and its quizzes?`)) {
+                              deleteCourseMutation.mutate(course.id);
+                            }
+                          }}
+                          disabled={deleteCourseMutation.isPending}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="w-full bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:brightness-110 transition-all"
+                      onClick={() => handleViewCourse(course.id)}
                     >
                       View Course
-                    </Link>
-                    <div className="flex gap-3">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="flex-1 rounded-2xl border-slate-600 hover:bg-slate-800"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCourseMutation.mutate({
-                            id: course.id,
-                            is_active: !(course.is_active ?? true),
-                          });
-                        }}
-                        disabled={toggleCourseMutation.isPending}
-                      >
-                        {(course.is_active ?? true) ? "Deactivate" : "Reactivate"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="flex-1 rounded-2xl text-red-400 hover:text-red-500 hover:bg-red-500/10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Delete course "${course.title}" and its quizzes?`)) {
-                            deleteCourseMutation.mutate(course.id);
-                          }
-                        }}
-                        disabled={deleteCourseMutation.isPending}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="w-full bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:brightness-110 transition-all"
-                    onClick={() => handleViewCourse(course.id)}
-                  >
-                    View Course
-                  </button>
-                )}
+                    </button>
+                  )}
 
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-yellow-400/5 to-orange-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            ))}
+                  <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-yellow-400/5 to-orange-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                className="rounded-xl border-slate-600 bg-slate-800/60 text-slate-200 hover:bg-slate-700"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page <= 1}
+              >
+                Previous
+              </Button>
+              <span className="text-slate-300 text-sm">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                className="rounded-xl border-slate-600 bg-slate-800/60 text-slate-200 hover:bg-slate-700"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={page >= totalPages}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="text-center py-24">

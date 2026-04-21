@@ -12,8 +12,6 @@ dist
 dist-ssr
 *.local
 
-<<<<<<< HEAD
-=======
 # OneDrive
 OneDrive/
 *.lnk
@@ -22,7 +20,6 @@ Thumbs.db
 *.tmp
 *.log
 
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -33,8 +30,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
-<<<<<<< HEAD
-=======
 # Django / Python
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -92,4 +87,3 @@ out/
 .idea/
 .DS_Store
 Thumbs.db
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52

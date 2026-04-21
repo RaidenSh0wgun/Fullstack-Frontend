@@ -50,8 +50,6 @@ export interface Course {
 
 type ListResponse<T> = T[] | { results?: T[] };
 
-<<<<<<< HEAD
-=======
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
@@ -59,7 +57,6 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 export interface Quiz {
   id: number;
   title: string;
@@ -267,8 +264,6 @@ export async function fetchMyCourses(): Promise<Course[]> {
   return Array.isArray(data) ? data : data.results ?? [];
 }
 
-<<<<<<< HEAD
-=======
 export async function fetchCoursesPage(path: string): Promise<PaginatedResponse<Course>> {
   const data = await request<ListResponse<Course> | PaginatedResponse<Course>>(path);
   if (Array.isArray(data)) {
@@ -290,18 +285,14 @@ export async function fetchCoursesPage(path: string): Promise<PaginatedResponse<
   };
 }
 
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 export async function fetchTeacherCourses(): Promise<Course[]> {
   return fetchMyCourses();
 }
 
-<<<<<<< HEAD
-=======
 export async function fetchTeacherCoursesPage(page = 1): Promise<PaginatedResponse<Course>> {
   return fetchCoursesPage(`/courses/my/?page=${page}`);
 }
 
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 export async function createCourse(
   payload: Pick<Course, "title" | "description" | "passkey">
 ): Promise<Course> {
@@ -514,25 +505,19 @@ export async function fetchEnrolledCourses(): Promise<Course[]> {
   return Array.isArray(data) ? data : data.results ?? [];
 }
 
-<<<<<<< HEAD
-=======
 export async function fetchEnrolledCoursesPage(page = 1): Promise<PaginatedResponse<Course>> {
   return fetchCoursesPage(`/courses/enrolled/?page=${page}`);
 }
 
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 export async function fetchCourses(): Promise<Course[]> {
   const data = await request<ListResponse<Course>>("/courses/");
   return Array.isArray(data) ? data : data.results ?? [];
 }
 
-<<<<<<< HEAD
-=======
 export async function fetchCoursesPaginated(page = 1): Promise<PaginatedResponse<Course>> {
   return fetchCoursesPage(`/courses/?page=${page}`);
 }
 
->>>>>>> 7bc9cec5c481f7ef859c04d0e7edd54e453aed52
 export async function fetchCourseDetail(id: number): Promise<Course> {
   return request<Course>(`/courses/${id}/detail/`);
 }

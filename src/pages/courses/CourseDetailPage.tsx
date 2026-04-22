@@ -359,7 +359,7 @@ export default function CourseDetailPage() {
                             onChange={(e) => setQuizTitle(e.target.value)}
                             placeholder="e.g. Week 1 Quiz"
                             required
-                            className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400"
+                            className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 text-slate-100 placeholder:text-slate-400 caret-white"
                           />
                         </div>
                         <div>
@@ -369,7 +369,7 @@ export default function CourseDetailPage() {
                             onChange={(e) => setQuizDescription(e.target.value)}
                             placeholder="What does this quiz cover?"
                             rows={3}
-                            className="bg-slate-800 border-slate-600 rounded-2xl focus:border-yellow-400"
+                            className="bg-slate-800 border-slate-600 rounded-2xl focus:border-yellow-400 text-slate-100 placeholder:text-slate-400 caret-white"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -380,7 +380,7 @@ export default function CourseDetailPage() {
                               min={1}
                               value={quizDuration}
                               onChange={(e) => setQuizDuration(e.target.value)}
-                              className="bg-slate-800 border-slate-600 h-12 rounded-2xl"
+                              className="bg-slate-800 border-slate-600 h-12 rounded-2xl text-slate-100 placeholder:text-slate-400 caret-white"
                             />
                           </div>
                           <div>
@@ -389,7 +389,7 @@ export default function CourseDetailPage() {
                               type="datetime-local"
                               value={quizDueDate}
                               onChange={(e) => setQuizDueDate(e.target.value)}
-                              className="bg-slate-800 border-slate-600 h-12 rounded-2xl"
+                              className="bg-slate-800 border-slate-600 h-12 rounded-2xl text-slate-100 placeholder:text-slate-400 caret-white"
                             />
                           </div>
                         </div>
@@ -556,7 +556,7 @@ export default function CourseDetailPage() {
                 onChange={(e) => setEditDescription(e.target.value)}
                 placeholder="Describe this course..."
                 rows={4}
-                className="bg-slate-800 border-slate-600 rounded-2xl"
+                className="bg-slate-800 border-slate-600 rounded-2xl text-slate-100 placeholder:text-slate-400 caret-white"
               />
             </div>
             <div>

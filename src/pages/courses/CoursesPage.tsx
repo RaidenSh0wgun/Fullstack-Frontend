@@ -32,6 +32,7 @@ export default function CoursesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [openCreateCourse, setOpenCreateCourse] = useState(false);
+  const [search, setSearch] = useState("");
   const [courseTitle, setCourseTitle] = useState("");
   const [courseDescription, setCourseDescription] = useState("");
   const [coursePasskey, setCoursePasskey] = useState("");
@@ -53,6 +54,13 @@ export default function CoursesPage() {
   const courseList = (coursesData?.results ?? []) as Course[];
   const totalCourses = coursesData?.count ?? courseList.length;
   const totalPages = Math.max(1, Math.ceil(totalCourses / 20));
+  const q = search.trim().toLowerCase();
+  const visibleCourses = q
+    ? courseList.filter((c) => {
+        const hay = `${c.title ?? ""}\n${c.description ?? ""}`.toLowerCase();
+        return hay.includes(q);
+      })
+    : courseList;
 
   const handleViewCourse = (courseId: number) => {
     navigate(`/courses/${courseId}`);
@@ -171,6 +179,15 @@ export default function CoursesPage() {
             )}
           </div>
 
+          <div className="w-full lg:w-[360px]">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search courses..."
+              className="h-12 rounded-2xl bg-slate-800/60 border-slate-600 text-white placeholder:text-slate-400 caret-white"
+            />
+          </div>
+
           {isTeacher && (
             <Dialog open={openCreateCourse} onOpenChange={setOpenCreateCourse}>
               <DialogTrigger asChild>
@@ -197,7 +214,7 @@ export default function CoursesPage() {
                       value={courseTitle}
                       onChange={(e) => setCourseTitle(e.target.value)}
                       placeholder="e.g. Advanced JavaScript"
-                      className="h-12 rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400"
+                      className="h-12 rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400 text-white placeholder:text-slate-400 caret-white"
                       required
                     />
                   </div>
@@ -207,7 +224,7 @@ export default function CoursesPage() {
                       value={courseDescription}
                       onChange={(e) => setCourseDescription(e.target.value)}
                       placeholder="What will students learn?"
-                      className="min-h-[80px] rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400 resize-none"
+                      className="min-h-[80px] rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400 resize-none text-slate-100 placeholder:text-slate-400 caret-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -217,7 +234,7 @@ export default function CoursesPage() {
                       value={coursePasskey}
                       onChange={(e) => setCoursePasskey(e.target.value)}
                       placeholder="Students will use this to join"
-                      className="h-12 rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400"
+                      className="h-12 rounded-2xl bg-slate-800 border-slate-600 focus:border-yellow-400 text-white placeholder:text-slate-400 caret-white"
                     />
                   </div>
                   <DialogFooter className="pt-4">
@@ -238,7 +255,7 @@ export default function CoursesPage() {
         {courseList.length ? (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {courseList.map((course) => (
+              {visibleCourses.map((course) => (
                 <div
                   key={course.id}
                   className="group relative rounded-3xl border border-slate-700 bg-slate-900/80 backdrop-blur-xl p-8 shadow-2xl shadow-black/50 hover:shadow-red-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"

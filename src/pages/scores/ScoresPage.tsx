@@ -5,10 +5,14 @@ import {
   fetchQuizzesForCourse,
   fetchQuizAttempts,
 } from "@/services/api";
+import { Input } from "@/components/ui/input";
 
 export default function ScoresPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [selectedQuizId, setSelectedQuizId] = useState<number | null>(null);
+  const [courseSearch, setCourseSearch] = useState("");
+  const [quizSearch, setQuizSearch] = useState("");
+  const [studentSearch, setStudentSearch] = useState("");
 
   const { data: courses } = useQuery({
     queryKey: ["courses"],
@@ -26,6 +30,24 @@ export default function ScoresPage() {
     queryFn: () => fetchQuizAttempts(selectedQuizId!),
     enabled: selectedQuizId !== null,
   });
+
+  const courseQ = courseSearch.trim().toLowerCase();
+  const visibleCourses = courseQ
+    ? (courses ?? []).filter((c) => (c.title ?? "").toLowerCase().includes(courseQ))
+    : (courses ?? []);
+
+  const quizQ = quizSearch.trim().toLowerCase();
+  const visibleQuizzes = quizQ
+    ? (quizzes ?? []).filter((q) => (q.title ?? "").toLowerCase().includes(quizQ))
+    : (quizzes ?? []);
+
+  const studentQ = studentSearch.trim().toLowerCase();
+  const visibleAttempts = studentQ
+    ? (attempts ?? []).filter((a) => {
+        const hay = `${a.student_name ?? ""}\n${a.username ?? ""}`.toLowerCase();
+        return hay.includes(studentQ);
+      })
+    : (attempts ?? []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
@@ -45,9 +67,16 @@ export default function ScoresPage() {
           <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
             <h2 className="text-2xl font-bold text-white mb-6">Courses</h2>
             
-            {courses?.length ? (
+            <Input
+              value={courseSearch}
+              onChange={(e) => setCourseSearch(e.target.value)}
+              placeholder="Search courses..."
+              className="h-12 rounded-2xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 caret-white mb-5"
+            />
+
+            {visibleCourses.length ? (
               <div className="space-y-2">
-                {courses.map((c) => (
+                {visibleCourses.map((c) => (
                   <button
                     key={c.id}
                     type="button"
@@ -78,9 +107,17 @@ export default function ScoresPage() {
               <div className="text-center py-12 text-slate-400">
                 Select a course to see its quizzes
               </div>
-            ) : quizzes?.length ? (
+            ) : (
+              <>
+                <Input
+                  value={quizSearch}
+                  onChange={(e) => setQuizSearch(e.target.value)}
+                  placeholder="Search quizzes..."
+                  className="h-12 rounded-2xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 caret-white mb-5"
+                />
+                {visibleQuizzes.length ? (
               <div className="space-y-2">
-                {quizzes.map((q) => (
+                {visibleQuizzes.map((q) => (
                   <button
                     key={q.id}
                     type="button"
@@ -95,10 +132,12 @@ export default function ScoresPage() {
                   </button>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12 text-slate-400">
-                No quizzes in this course yet.
-              </div>
+                ) : (
+                  <div className="text-center py-12 text-slate-400">
+                    No quizzes found.
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -112,34 +151,44 @@ export default function ScoresPage() {
               </div>
             ) : isLoading ? (
               <div className="text-center py-12 text-slate-400">Loading scores...</div>
-            ) : attempts?.length ? (
-              <div className="space-y-3">
-                {attempts.map((a) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center justify-between bg-slate-950 border border-slate-700 rounded-2xl px-6 py-5 hover:border-yellow-400/30 transition-all"
-                  >
-                    <div>
-                      <p className="font-medium text-white">
-                        {a.student_name || a.username}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Submitted {new Date(a.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-bold text-white">
-                        {a.score}
-                      </span>
-                      <span className="text-slate-400"> / {a.total}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             ) : (
-              <div className="text-center py-12 text-slate-400">
-                No attempts yet for this quiz.
-              </div>
+              <>
+                <Input
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder="Search students..."
+                  className="h-12 rounded-2xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 caret-white mb-5"
+                />
+                {visibleAttempts.length ? (
+                  <div className="space-y-3">
+                    {visibleAttempts.map((a) => (
+                      <div
+                        key={a.id}
+                        className="flex items-center justify-between bg-slate-950 border border-slate-700 rounded-2xl px-6 py-5 hover:border-yellow-400/30 transition-all"
+                      >
+                        <div>
+                          <p className="font-medium text-white">
+                            {a.student_name || a.username}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Submitted {new Date(a.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-2xl font-bold text-white">
+                            {a.score}
+                          </span>
+                          <span className="text-slate-400"> / {a.total}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-slate-400">
+                    No attempts found.
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

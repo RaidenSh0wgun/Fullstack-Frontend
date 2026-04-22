@@ -22,6 +22,9 @@ export default function DashboardPage() {
   if (user?.role === "teacher") {
     return <InstructorDashboard />;
   }
+  if (user?.role === "student" && user.email_verified !== true) {
+    return <UnverifiedStudentDashboard />;
+  }
   return <StudentDashboard />;
 }
 
@@ -32,7 +35,7 @@ function AdminDashboard() {
   });
 
   const stats = useMemo(() => {
-    const counts = { total: 0, male: 0, female: 0, unspecified: 0 };
+    const counts = { total: 0, male: 0, female: 0, notVerified: 0 };
     if (!adminUsers) return counts;
 
     counts.total = adminUsers.length;
@@ -40,7 +43,7 @@ function AdminDashboard() {
       const sex = (user.sex || "").toLowerCase();
       if (sex === "male") counts.male += 1;
       else if (sex === "female") counts.female += 1;
-      else counts.unspecified += 1;
+      if (user.email_verified !== true) counts.notVerified += 1;
     }
     return counts;
   }, [adminUsers]);
@@ -48,7 +51,7 @@ function AdminDashboard() {
   const getPercent = (value: number) => (stats.total ? Math.round((value / stats.total) * 100) : 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4">
       <div className="max-w-6xl mx-auto space-y-10">
         <div className="rounded-3xl bg-slate-900/50 backdrop-blur-md border border-slate-700/50 p-10 shadow-2xl shadow-black/30">
           <div className="text-center mb-10">
@@ -86,9 +89,9 @@ function AdminDashboard() {
                   <p className="text-sm text-slate-500">{getPercent(stats.female)}%</p>
                 </div>
                 <div className="rounded-3xl border border-slate-700/70 bg-slate-900/80 p-5">
-                  <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Unknown</p>
-                  <p className="mt-3 text-3xl font-bold text-white">{stats.unspecified}</p>
-                  <p className="text-sm text-slate-500">{getPercent(stats.unspecified)}%</p>
+                  <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Not Verified</p>
+                  <p className="mt-3 text-3xl font-bold text-white">{stats.notVerified}</p>
+                  <p className="text-sm text-slate-500">{getPercent(stats.notVerified)}%</p>
                 </div>
               </div>
 
@@ -96,7 +99,7 @@ function AdminDashboard() {
                 {[
                   { label: "Male", value: stats.male, color: "bg-blue-500" },
                   { label: "Female", value: stats.female, color: "bg-pink-500" },
-                  { label: "Unknown", value: stats.unspecified, color: "bg-slate-500" },
+                  { label: "Not Verified", value: stats.notVerified, color: "bg-amber-500" },
                 ].map((slice) => (
                   <div key={slice.label}>
                     <div className="flex items-center justify-between text-sm text-slate-300 mb-2">
@@ -132,6 +135,29 @@ function AdminDashboard() {
   );
 }
 
+function UnverifiedStudentDashboard() {
+  return (
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-6 flex items-center justify-center">
+      <div className="w-full max-w-xl bg-slate-900/50 backdrop-blur-md border border-slate-700/50 rounded-3xl p-10 shadow-2xl shadow-black/30 text-center">
+        <h1 className="text-3xl font-black text-white">Verify your email</h1>
+        <p className="text-slate-400 mt-4 leading-relaxed">
+          Your student dashboard is locked until your email is verified.
+        </p>
+        <p className="text-slate-300 mt-2 text-sm">
+          After verifying, reload to access the dashboard.
+        </p>
+        <div className="mt-8">
+          <Link to="/profile" className="inline-flex">
+            <button className="h-12 px-8 bg-gradient-to-r from-red-500 via-yellow-500 to-orange-500 text-white font-bold rounded-2xl shadow-xl hover:brightness-110 transition-all">
+              Go to Profile
+            </button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function InstructorDashboard() {
   const { data: courses } = useQuery({
     queryKey: ["courses"],
@@ -147,7 +173,7 @@ function InstructorDashboard() {
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8">
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-12">
           <div className="w-16 h-16 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center border-2 border-white/20">
@@ -243,7 +269,7 @@ function StudentDashboard() {
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-8">
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-12">
           <div className="w-16 h-16 bg-gradient-to-r from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center border-2 border-white/20">

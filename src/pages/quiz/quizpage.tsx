@@ -394,7 +394,7 @@ export default function QuizPage() {
                             onChange={(e) => handleTextAtIndex(q.id, idx, e.target.value, expectedCount)}
                             disabled={!canEdit}
                             placeholder={`Answer ${idx + 1}`}
-                            className="min-h-[70px] bg-slate-800 border-slate-600 rounded-2xl focus:border-yellow-400"
+                            className="min-h-[70px] bg-slate-800 border-slate-600 rounded-2xl text-slate-100 placeholder:text-slate-400 caret-white focus:border-yellow-400"
                           />
                           {showAttempt && expectedAnswers[idx] && (
                             <p className={`mt-2 text-sm ${isCorrect ? "text-emerald-400" : "text-red-400"}`}>
@@ -409,7 +409,7 @@ export default function QuizPage() {
                         onChange={(e) => handleText(q.id, e.target.value)}
                         disabled={!canEdit}
                         placeholder="Type your answer here..."
-                        className="min-h-[120px] bg-slate-800 border-slate-600 rounded-2xl focus:border-yellow-400"
+                        className="min-h-[120px] bg-slate-800 border-slate-600 rounded-2xl text-slate-100 placeholder:text-slate-400 caret-white focus:border-yellow-400"
                       />
                     )}
                   </div>
@@ -418,16 +418,17 @@ export default function QuizPage() {
                     {(q as any).choices.map((ch: any) => {
                       const selected = answer === ch.id;
                       const showFeedback = showAttempt && !canEdit;
-                      let style = "border border-slate-700 bg-slate-900 hover:border-yellow-400/50";
+                      let style =
+                        "border border-slate-700 bg-slate-900 text-slate-100 hover:border-yellow-400/50";
 
                       if (showFeedback) {
                         if (selected) {
                           style = ch.is_correct
-                            ? "border-emerald-500 bg-emerald-950/50"
-                            : "border-red-500 bg-red-950/50";
+                            ? "border-emerald-500 bg-emerald-950/50 text-emerald-100"
+                            : "border-red-500 bg-red-950/50 text-red-100";
                         }
                       } else if (selected) {
-                        style = "border-yellow-400 bg-yellow-950/30";
+                        style = "border-yellow-400 bg-yellow-950/30 text-yellow-100";
                       }
 
                       return (

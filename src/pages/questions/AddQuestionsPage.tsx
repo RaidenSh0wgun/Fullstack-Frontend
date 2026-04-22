@@ -135,7 +135,7 @@ export default function AddQuestionsPage() {
                 value={questionText}
                 onChange={(e) => setQuestionText(e.target.value)}
                 placeholder="e.g. What is 2 + 2?"
-                className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-2"
+                className="bg-slate-800 border-slate-600 h-12 rounded-2xl !text-white placeholder:!text-slate-400 caret-white focus:border-yellow-400 mt-2"
                 required
               />
             </div>
@@ -143,7 +143,7 @@ export default function AddQuestionsPage() {
             <div>
               <Label className="text-slate-200">Question Type</Label>
               <select
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 !text-white focus:border-yellow-400"
                 value={questionType}
                 onChange={(e) => {
                   const next = e.target.value as QuestionType;
@@ -164,7 +164,7 @@ export default function AddQuestionsPage() {
               <div>
                 <Label className="text-slate-200">Answer Format</Label>
                 <select
-                  className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
+                  className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 !text-white focus:border-yellow-400"
                   value={answerFormat}
                   onChange={(e) => setAnswerFormat(e.target.value)}
                 >
@@ -203,7 +203,7 @@ export default function AddQuestionsPage() {
                         )
                       }
                       placeholder={`Choice ${idx + 1}`}
-                      className="bg-slate-800 border-slate-600 rounded-2xl"
+                      className="bg-slate-800 border-slate-600 rounded-2xl !text-white placeholder:!text-slate-400 caret-white"
                     />
                   </div>
                 ))}
@@ -235,7 +235,7 @@ export default function AddQuestionsPage() {
                           )
                         }
                         placeholder={`Answer ${idx + 1}`}
-                        className="bg-slate-800 border-slate-600 rounded-2xl"
+                        className="bg-slate-800 border-slate-600 rounded-2xl !text-white placeholder:!text-slate-400 caret-white"
                       />
                       {questionType === "enumeration" && arr.length > 1 && (
                         <Button
@@ -273,7 +273,7 @@ export default function AddQuestionsPage() {
               <div>
                 <Label className="text-slate-200">Correct Answer</Label>
                 <select
-                  className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 text-white focus:border-yellow-400"
+                  className="mt-2 h-12 w-full rounded-2xl border border-slate-600 bg-slate-800 px-4 !text-white focus:border-yellow-400"
                   value={(correctTexts[0] || "True").toLowerCase()}
                   onChange={(e) =>
                     setCorrectTexts([e.target.value === "true" ? "True" : "False"])

@@ -123,3 +123,137 @@
     @apply bg-background text-foreground;
   }
 }
+
+.fc .fc-daygrid-event-harness {
+  max-width: 100%;
+}
+
+.fc .fc-daygrid-event {
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.fc .fc-daygrid-event .fc-event-main {
+  overflow: hidden;
+}
+
+.fc .fc-daygrid-day-events {
+  position: relative;
+}
+
+.fc .fc-daygrid-more-link {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.6);
+  color: rgba(226, 232, 240, 0.95);
+  font-size: 11px;
+  line-height: 1.2;
+  text-decoration: none;
+  position: relative;
+  z-index: 2;
+}
+
+.fc .fc-daygrid-more-link:hover {
+  background: rgba(51, 65, 85, 0.7);
+  color: rgba(255, 255, 255, 0.98);
+}
+
+.fc .fc-scrollgrid,
+.fc .fc-scrollgrid table,
+.fc .fc-scrollgrid-section > td,
+.fc .fc-scrollgrid-section > th {
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.fc .fc-timegrid-divider {
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.fc .fc-timegrid-slot,
+.fc .fc-timegrid-col,
+.fc .fc-timegrid-axis,
+.fc .fc-col-header-cell,
+.fc .fc-daygrid-day-frame {
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+.fc .fc-timegrid-slot-lane {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-timegrid-axis-cushion,
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-slot-label,
+.fc .fc-timegrid-axis,
+.fc .fc-daygrid-day-number {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.fc .fc-toolbar-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.fc .fc-list-event-time,
+.fc .fc-list-event-title,
+.fc .fc-list-event-title a {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.fc .fc-list-event-dot {
+  border-color: rgba(96, 165, 250, 0.95);
+}
+
+.fc .fc-list-event-time {
+  white-space: nowrap;
+}
+
+.fc .fc-timegrid-event {
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.fc .fc-timegrid-event .fc-event-main,
+.fc .fc-timegrid-event .fc-event-main-frame,
+.fc .fc-timegrid-event .fc-event-time,
+.fc .fc-timegrid-event .fc-event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc .fc-timegrid-event .fc-event-title {
+  white-space: nowrap;
+}
+
+.fc .fc-list,
+.fc .fc-list-table {
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.fc .fc-list-day-cushion {
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.fc .fc-list-day-cushion .fc-list-day-text,
+.fc .fc-list-day-cushion .fc-list-day-side-text {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.fc .fc-list-event:hover td {
+  background: rgba(51, 65, 85, 0.35);
+}
+
+.fc .fc-list-event-title a {
+  color: rgba(226, 232, 240, 0.95);
+  text-decoration: none;
+}
+
+.fc .fc-list-event-title a:hover {
+  color: rgba(255, 255, 255, 0.98);
+  text-decoration: underline;
+}

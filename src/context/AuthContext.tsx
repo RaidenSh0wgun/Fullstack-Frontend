@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import type { ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   loginRequest,
   registerRequest,
@@ -35,6 +36,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,12 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (payload: LoginPayload) => {
+    queryClient.clear();
     const auth = await loginRequest(payload);
     storeAuth(auth);
     setAccessToken(auth.access);
     const u = await fetchCurrentUser(auth.access);
     setUser(u);
-  }, []);
+  }, [queryClient]);
 
   const refreshUser = useCallback(async () => {
     const stored = loadStoredAuth();
@@ -84,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
   const register = useCallback(async (payload: RegisterPayload) => {
+    queryClient.clear();
     const auth = await registerRequest(payload);
     if (!auth?.access || !auth?.refresh) {
       throw new Error("Registration did not return valid tokens.");
@@ -96,17 +100,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(u);
     } catch (err) {
       clearStoredAuth();
+      queryClient.clear();
       setUser(null);
       setAccessToken(null);
       throw err;
     }
-  }, []);
+  }, [queryClient]);
 
   const logout = useCallback(() => {
     clearStoredAuth();
+    queryClient.clear();
     setUser(null);
     setAccessToken(null);
-  }, []);
+  }, [queryClient]);
 
   const value = useMemo(
     () => ({

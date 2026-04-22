@@ -137,7 +137,7 @@ export default function EditQuizQuestionsTab() {
               value={newText}
               onChange={(e) => setNewText(e.target.value)}
               placeholder="e.g. What is 2 + 2?"
-              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-2"
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-2 text-white placeholder:text-slate-400 caret-white"
               required
             />
           </div>
@@ -186,7 +186,7 @@ export default function EditQuizQuestionsTab() {
                       )
                     }
                     placeholder={`Choice ${idx + 1}`}
-                    className="bg-slate-800 border-slate-600 rounded-2xl"
+                    className="bg-slate-800 border-slate-600 rounded-2xl text-white placeholder:text-slate-400 caret-white"
                   />
                 </div>
               ))}
@@ -218,7 +218,7 @@ export default function EditQuizQuestionsTab() {
                         )
                       }
                       placeholder={`Answer ${idx + 1}`}
-                      className="bg-slate-800 border-slate-600 rounded-2xl"
+                      className="bg-slate-800 border-slate-600 rounded-2xl text-white placeholder:text-slate-400 caret-white"
                     />
                     {newType === "enumeration" && (
                       <Button
@@ -396,7 +396,7 @@ function EditableQuestionRow({
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2 focus:border-yellow-400"
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2 focus:border-yellow-400 text-white placeholder:text-slate-400 caret-white"
               required
             />
           </div>
@@ -462,7 +462,7 @@ function EditableQuestionRow({
                       )
                     }
                     placeholder={`Choice ${idx + 1}`}
-                    className="bg-slate-800 border-slate-600 rounded-2xl"
+                    className="bg-slate-800 border-slate-600 rounded-2xl text-white placeholder:text-slate-400 caret-white"
                   />
                 </div>
               ))}
@@ -494,7 +494,7 @@ function EditableQuestionRow({
                         )
                       }
                       placeholder={`Answer ${idx + 1}`}
-                      className="bg-slate-800 border-slate-600 rounded-2xl"
+                      className="bg-slate-800 border-slate-600 rounded-2xl text-white placeholder:text-slate-400 caret-white"
                     />
                     {type === "enumeration" && arr.length > 1 && (
                       <Button

@@ -116,7 +116,7 @@ export default function EditQuizSettingsTab() {
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               disabled={saveMutation.isPending}
-              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-3 text-lg"
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-3 text-lg text-white placeholder:text-slate-400 caret-white"
             />
             <p className="mt-3 text-xs text-slate-400">
               This controls the countdown timer students see while taking the quiz.
@@ -131,7 +131,7 @@ export default function EditQuizSettingsTab() {
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               disabled={saveMutation.isPending}
-              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-3"
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl focus:border-yellow-400 mt-3 text-white placeholder:text-slate-400 caret-white"
             />
             <p className="mt-3 text-xs text-slate-400">
               Students will see this date. You can later enforce it to block late submissions.

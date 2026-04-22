@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchCalendarQuizzes, type Quiz } from "@/services/api";
 import FullCalendar from "@fullcalendar/react";
 import type { EventInput } from "@fullcalendar/core";
@@ -23,17 +23,23 @@ function formatEventTime(d: Date | null): string {
 export default function CalendarPage() {
   const { user } = useAuth();
   const isStudent = user?.role === "student";
-  const { data: quizzes, isLoading, error } = useQuery({
+  const { data: quizzes, isLoading, isFetching, error } = useQuery({
     queryKey: ["calendar-quizzes"],
     queryFn: fetchCalendarQuizzes,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 
   const navigate = useNavigate();
 
-  if (isLoading) {
+  if (isLoading && !quizzes) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 flex items-center justify-center">
-        <p className="text-lg text-slate-400">Loading calendar...</p>
+        <div className="w-full max-w-3xl space-y-4">
+          <div className="h-8 w-52 rounded-lg bg-slate-800/80 animate-pulse" />
+          <div className="h-72 rounded-2xl bg-slate-900/80 border border-slate-700 animate-pulse" />
+          <div className="h-24 rounded-xl bg-slate-900/80 border border-slate-700 animate-pulse" />
+        </div>
       </div>
     );
   }
@@ -98,7 +104,12 @@ export default function CalendarPage() {
           </p>
         </div>
 
-        <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-4 md:p-6 shadow-xl">
+        <div className="relative bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-4 md:p-6 shadow-xl">
+          {isFetching && (
+            <div className="absolute right-4 top-4 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[11px] uppercase tracking-wide text-amber-300">
+              Updating...
+            </div>
+          )}
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -114,6 +125,7 @@ export default function CalendarPage() {
               const status = (arg.event.extendedProps as any)?.status as string | undefined;
               const time = formatEventTime(arg.event.start);
               const title = arg.event.title || "";
+              const isMonth = arg.view.type === "dayGridMonth";
               const statusLabel =
                 status === "completed"
                   ? "COMPLETED"
@@ -123,18 +135,26 @@ export default function CalendarPage() {
 
               return (
                 <div
-                  className={`px-3 py-2 text-xs rounded-lg leading-tight overflow-hidden transition-all ${
+                  className={`${
+                    isMonth ? "px-2 py-1 rounded-md" : "px-3 py-2 rounded-lg"
+                  } text-xs leading-tight overflow-hidden transition-all ${
                     courseId ? "cursor-pointer hover:bg-yellow-400/20" : ""
                   }`}
                 >
                   {time && (
-                    <div className="font-medium text-amber-300 mb-0.5">{time}</div>
+                    <div className={`font-medium text-amber-300 ${isMonth ? "mb-0" : "mb-0.5"}`}>
+                      {time}
+                    </div>
                   )}
-                  <div className="font-medium text-white line-clamp-2 break-words">
+                  <div
+                    className={`font-medium text-white ${isMonth ? "line-clamp-1" : "line-clamp-2"} break-words`}
+                  >
                     {title}
                   </div>
                   {isStudent && (
-                    <div className="mt-1 text-[10px] uppercase tracking-widest text-slate-300">
+                    <div
+                      className={`${isMonth ? "mt-0.5" : "mt-1"} text-[10px] uppercase tracking-widest text-slate-300`}
+                    >
                       {statusLabel}
                     </div>
                   )}

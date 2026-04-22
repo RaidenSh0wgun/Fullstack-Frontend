@@ -35,7 +35,7 @@ export default function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-[#F8FAFC]">
+      <div className="flex h-dvh w-full overflow-hidden bg-[#F8FAFC]">
         <Sidebar className="bg-[#6366F1] backdrop-blur-xl">
           <SidebarHeader className="px-5 py-5 bg-[#F8FAFC] border-b-3">
             <Link to="/" className="flex items-center gap-3">
@@ -136,7 +136,7 @@ export default function DashboardLayout() {
                 <p className="font-medium text-[#1E293B] text-sm truncate">
                   {user?.full_name || user?.username}
                 </p>
-                <p className="text-xs text-[#6366F1] font-medium truncate">View Profile</p>
+                <p className="text-xs text-[#6366F1] font-medium truncate"></p>
                 <p className="text-xs text-slate-400 truncate">@{user?.username}</p>
                 <p className="text-xs text-slate-400 capitalize">{user?.role}</p>
               </div>

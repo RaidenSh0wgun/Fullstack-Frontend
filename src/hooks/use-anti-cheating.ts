@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
+import { useIsMobile } from './use-mobile';
 
 interface AntiCheatingOptions {
   onCheatingDetected?: (type: 'tab_switch' | 'copy_paste' | 'screenshot') => void;
@@ -20,6 +21,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
     isLeaving = false,
     timeLeft,
   } = options;
+  const isMobile = useIsMobile();
 
   const showWarning = useCallback((message: string) => {
     if (showWarnings) {
@@ -29,8 +31,9 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
 
   const tabSwitchCountRef = useRef(0);
   const lastTabSwitchTimeRef = useRef(0);
+  const tabSwitchCycleCountedRef = useRef(false);
   const autoSubmittedRef = useRef(false);
-  const TAB_SWITCH_WARNING_LIMIT = 3;
+  const TAB_SWITCH_WARNING_LIMIT = 4;
 
   const getCheatingDelay = useCallback(() => {
     if (timeLeft == null || timeLeft <= 0) return 1000;
@@ -56,7 +59,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
   }, [onCheatingDetected, onAutoSubmit, autoSubmitOnCheat, quizId, timeLeft, getCheatingDelay]);
 
   useEffect(() => {
-    if (isLeaving) return;
+    if (isLeaving || isMobile) return;
     const disableContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       reportCheating('copy_paste');
@@ -108,39 +111,31 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       document.removeEventListener("paste", disablePasteInAnswers);
       document.removeEventListener("keydown", disableKeyShortcuts);
     };
-  }, [reportCheating, showWarning, isLeaving]);
+  }, [reportCheating, showWarning, isLeaving, isMobile]);
 
   useEffect(() => {
-    if (isLeaving) return;
-
-    let blurTimeout: number | null = null;
-
-    const handleBlur = () => {
-      blurTimeout = window.setTimeout(() => {
-        handleTabSwitchAttempt();
-      }, 50);
-    };
-
-    const handleFocus = () => {
-      if (blurTimeout !== null) {
-        window.clearTimeout(blurTimeout);
-        blurTimeout = null;
-      }
-    };
+    if (isLeaving || isMobile) return;
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         handleTabSwitchAttempt();
+      } else {
+        tabSwitchCycleCountedRef.current = false;
       }
     };
 
     const handleTabSwitchAttempt = () => {
+      if (tabSwitchCycleCountedRef.current) {
+        return;
+      }
+
       const now = Date.now();
       if (now - lastTabSwitchTimeRef.current < 1000) {
         return;
       }
 
       lastTabSwitchTimeRef.current = now;
+      tabSwitchCycleCountedRef.current = true;
       tabSwitchCountRef.current += 1;
       const count = tabSwitchCountRef.current;
 
@@ -156,25 +151,22 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       }
 
       showWarning(`${count}/${TAB_SWITCH_WARNING_LIMIT}: Switching tabs or using Alt+Tab is not allowed during the quiz.`);
+      // Force focus only on desktop where it is supported and stable.
       window.focus();
       if (document.body) {
         (document.body as HTMLElement).focus();
       }
     };
 
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [reportCheating, showWarning, isLeaving, autoSubmitOnCheat, onAutoSubmit]);
+  }, [reportCheating, showWarning, isLeaving, autoSubmitOnCheat, onAutoSubmit, isMobile]);
 
   useEffect(() => {
-    if (isLeaving) return;
+    if (isLeaving || isMobile) return;
 
     const preventScreenshot = (e: KeyboardEvent) => {
       console.log('Screenshot prevention check:', {
@@ -246,5 +238,5 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       window.removeEventListener("keydown", preventScreenshot, true);
       window.removeEventListener("keyup", preventScreenshot, true);
     };
-  }, [reportCheating, showWarning, isLeaving]);
+  }, [reportCheating, showWarning, isLeaving, isMobile]);
 }

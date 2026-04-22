@@ -3,9 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchTeacherCourses, fetchCourseStudents } from "@/services/api";
 import { Link } from "react-router-dom";
 import { Users } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export default function StudentsPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [courseSearch, setCourseSearch] = useState("");
+  const [studentSearch, setStudentSearch] = useState("");
 
   const { data: courses } = useQuery({
     queryKey: ["courses"],
@@ -17,6 +20,19 @@ export default function StudentsPage() {
     queryFn: () => fetchCourseStudents(selectedCourseId!),
     enabled: selectedCourseId !== null,
   });
+
+  const courseQ = courseSearch.trim().toLowerCase();
+  const visibleCourses = courseQ
+    ? (courses ?? []).filter((c) => (c.title ?? "").toLowerCase().includes(courseQ))
+    : (courses ?? []);
+
+  const studentQ = studentSearch.trim().toLowerCase();
+  const visibleStudents = studentQ
+    ? (students ?? []).filter((s) => {
+        const hay = `${s.full_name ?? ""}\n${s.username ?? ""}\n${s.user ?? ""}`.toLowerCase();
+        return hay.includes(studentQ);
+      })
+    : (students ?? []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
@@ -34,9 +50,16 @@ export default function StudentsPage() {
           <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50 h-fit">
             <h2 className="text-2xl font-bold text-white mb-6">Your Courses</h2>
 
-            {courses?.length ? (
+            <Input
+              value={courseSearch}
+              onChange={(e) => setCourseSearch(e.target.value)}
+              placeholder="Search courses..."
+              className="h-12 rounded-2xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 caret-white mb-5"
+            />
+
+            {visibleCourses.length ? (
               <div className="space-y-2">
-                {courses.map((course) => (
+                {visibleCourses.map((course) => (
                   <button
                     key={course.id}
                     type="button"
@@ -72,9 +95,17 @@ export default function StudentsPage() {
               </div>
             ) : isLoading ? (
               <div className="text-center py-20 text-slate-400">Loading students...</div>
-            ) : students?.length ? (
+            ) : (
+              <>
+                <Input
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder="Search students..."
+                  className="h-12 rounded-2xl bg-slate-800 border-slate-600 text-white placeholder:text-slate-400 caret-white mb-5"
+                />
+                {visibleStudents.length ? (
               <div className="space-y-3">
-                {students.map((student) => (
+                {visibleStudents.map((student) => (
                   <div
                     key={student.id}
                     className="flex items-center justify-between bg-slate-950 border border-slate-700 hover:border-yellow-400/30 rounded-2xl px-8 py-6 transition-all"
@@ -96,13 +127,15 @@ export default function StudentsPage() {
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-20">
-                <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center">
-                  <Users className="h-9 w-9 opacity-50 text-slate-200" />
-                </div>
-                <p className="text-slate-400">No students enrolled in this course yet.</p>
-              </div>
+                ) : (
+                  <div className="text-center py-20">
+                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center">
+                      <Users className="h-9 w-9 opacity-50 text-slate-200" />
+                    </div>
+                    <p className="text-slate-400">No students found.</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

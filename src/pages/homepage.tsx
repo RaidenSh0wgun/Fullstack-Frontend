@@ -230,7 +230,7 @@ function TeacherDashboard() {
                       value={courseTitle}
                       onChange={(e) => setCourseTitle(e.target.value)}
                       placeholder="Introduction to Python"
-                      className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2"
+                      className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2 text-white placeholder:text-slate-400 caret-white"
                       required
                     />
                   </div>
@@ -240,7 +240,7 @@ function TeacherDashboard() {
                       value={courseDescription}
                       onChange={(e) => setCourseDescription(e.target.value)}
                       placeholder="What will students learn?"
-                      className="bg-slate-800 border-slate-600 rounded-2xl mt-2"
+                      className="bg-slate-800 border-slate-600 rounded-2xl mt-2 text-slate-100 placeholder:text-slate-400 caret-white"
                       rows={3}
                     />
                   </div>
@@ -251,7 +251,7 @@ function TeacherDashboard() {
                       value={coursePasskey}
                       onChange={(e) => setCoursePasskey(e.target.value)}
                       placeholder="Leave blank for open enrollment"
-                      className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2"
+                      className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2 text-white placeholder:text-slate-400 caret-white"
                     />
                   </div>
                   <DialogFooter>
@@ -413,7 +413,7 @@ function TeacherDashboard() {
                 value={quizTitle}
                 onChange={(e) => setQuizTitle(e.target.value)}
                 placeholder="Week 1 Quiz"
-                className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2"
+                className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2 text-white placeholder:text-slate-400 caret-white"
                 required
               />
             </div>
@@ -424,7 +424,7 @@ function TeacherDashboard() {
                 value={quizDescription}
                 onChange={(e) => setQuizDescription(e.target.value)}
                 placeholder="What does this quiz cover?"
-                className="bg-slate-800 border-slate-600 rounded-2xl mt-2"
+                className="bg-slate-800 border-slate-600 rounded-2xl mt-2 text-slate-100 placeholder:text-slate-400 caret-white"
                 rows={3}
               />
             </div>
@@ -436,7 +436,7 @@ function TeacherDashboard() {
                 min={1}
                 value={quizDuration}
                 onChange={(e) => setQuizDuration(e.target.value)}
-                className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2"
+                className="bg-slate-800 border-slate-600 h-12 rounded-2xl mt-2 text-white placeholder:text-slate-400 caret-white"
               />
             </div>
 
@@ -648,7 +648,7 @@ function StudentDashboard() {
               value={enrollPasskey}
               onChange={(e) => setEnrollPasskey(e.target.value)}
               placeholder="Passkey"
-              className="bg-slate-800 border-slate-600 h-12 rounded-2xl"
+              className="bg-slate-800 border-slate-600 h-12 rounded-2xl text-white placeholder:text-slate-400 caret-white"
             />
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setOpenEnrollDialog(false)} className="rounded-2xl">

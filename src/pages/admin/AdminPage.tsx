@@ -8,6 +8,7 @@ import {
   type AdminManagedUser,
 } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { UserRound } from "lucide-react";
 
 export default function AdminPage() {
   const queryClient = useQueryClient();
@@ -76,7 +77,6 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
         <div>
           <h1 className="text-4xl font-bold text-foreground">Admin Dashboard</h1>
           <p className="text-lg text-muted-foreground mt-2">
@@ -85,7 +85,6 @@ export default function AdminPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-12">
-          {/* Student List - Left Side */}
           <div className="lg:col-span-5">
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
               <div className="mb-6">
@@ -136,12 +135,13 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Management Panel - Right Side */}
           <div className="lg:col-span-7"> 
             <div className="rounded-2xl border border-border bg-card p-8 shadow-sm min-h-[600px]">
               {selectedUserId === null ? (
                 <div className="flex flex-col items-center justify-center h-full py-20 text-center">
-                  <div className="text-7xl mb-6 opacity-40">👤</div>
+                  <div className="mb-6 rounded-full bg-muted p-5 text-muted-foreground">
+                    <UserRound className="h-12 w-12" />
+                  </div>
                   <h3 className="text-2xl font-medium text-foreground">No student selected</h3>
                   <p className="text-lg text-muted-foreground mt-3 max-w-md">
                     Choose a student from the list on the left to edit their account details.
@@ -151,7 +151,6 @@ export default function AdminPage() {
                 <p className="text-center py-20 text-xl text-muted-foreground">Loading account details...</p>
               ) : (
                 <div className="space-y-10">
-                  {/* User Header */}
                   <div>
                     <h2 className="text-3xl font-bold text-foreground">{selectedLabel}</h2>
                     <p className="text-2xl text-muted-foreground mt-2">
@@ -160,7 +159,6 @@ export default function AdminPage() {
                     </p>
                   </div>
 
-                  {/* Edit Fields */}
                   <div className="grid gap-8 md:grid-cols-2">
                     <div className="space-y-3">
                       <label className="text-xl font-semibold text-foreground block">Full Name</label>
@@ -207,7 +205,6 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Password Reset */}
                   <div className="space-y-3">
                     <label className="text-xl font-semibold text-foreground block">Reset Password</label>
                     <input
@@ -231,7 +228,6 @@ export default function AdminPage() {
                     </Button>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="pt-6 border-t">
                     <p className="text-xl font-semibold mb-4">Account Actions</p>
                     <div className="flex flex-wrap gap-4">

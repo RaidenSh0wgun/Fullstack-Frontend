@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTeacherCourses, fetchCourseStudents } from "@/services/api";
 import { Link } from "react-router-dom";
+import { Users } from "lucide-react";
 
 export default function StudentsPage() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
@@ -20,7 +21,6 @@ export default function StudentsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto space-y-10">
-        {/* Header */}
         <div>
           <h1 className="text-5xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
             Students
@@ -56,7 +56,6 @@ export default function StudentsPage() {
             )}
           </div>
 
-          {/* Students List */}
           <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/50">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-white">Enrolled Students</h2>
@@ -100,7 +99,7 @@ export default function StudentsPage() {
             ) : (
               <div className="text-center py-20">
                 <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center">
-                  <span className="text-4xl opacity-40">👥</span>
+                  <Users className="h-9 w-9 opacity-50 text-slate-200" />
                 </div>
                 <p className="text-slate-400">No students enrolled in this course yet.</p>
               </div>

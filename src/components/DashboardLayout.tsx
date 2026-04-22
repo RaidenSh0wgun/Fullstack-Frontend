@@ -11,7 +11,6 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { NotebookPen } from 'lucide-react';
 
 import {
   LayoutDashboard,
@@ -19,6 +18,7 @@ import {
   Calendar,
   Users,
   BarChart3,
+  NotebookPen,
   PanelLeft,
   Shield,
 } from "lucide-react";
@@ -26,6 +26,7 @@ import {
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const isUnverifiedStudent = user?.role === "student" && user.email_verified !== true;
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -39,7 +40,7 @@ export default function DashboardLayout() {
           <SidebarHeader className="px-5 py-5 bg-[#F8FAFC] border-b-3">
             <Link to="/" className="flex items-center gap-3">
               <div className="w-9 h-9 bg-[#6366F1] rounded-xl flex items-center justify-center">
-                <NotebookPen className="text-white"/>
+                <NotebookPen className="text-white" />
               </div>
               <span className="font-black text-2xl bg-[#6366F1] bg-clip-text text-black/0">
                 QuizApp
@@ -58,7 +59,7 @@ export default function DashboardLayout() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {user?.role !== "admin" && (
+              {user?.role !== "admin" && !isUnverifiedStudent && (
                 <>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive("/courses")}>

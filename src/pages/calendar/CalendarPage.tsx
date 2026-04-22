@@ -7,6 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 function formatEventTime(d: Date | null): string {
   if (!d) return "";
@@ -20,6 +21,8 @@ function formatEventTime(d: Date | null): string {
 }
 
 export default function CalendarPage() {
+  const { user } = useAuth();
+  const isStudent = user?.role === "student";
   const { data: quizzes, isLoading, error } = useQuery({
     queryKey: ["calendar-quizzes"],
     queryFn: fetchCalendarQuizzes,
@@ -65,9 +68,13 @@ export default function CalendarPage() {
         id: quiz.id.toString(),
         title: quiz.title,
         start: quiz.due_date!,
-        backgroundColor: palette.background,
-        borderColor: palette.border,
-        textColor: palette.text,
+        ...(isStudent
+          ? {
+              backgroundColor: palette.background,
+              borderColor: palette.border,
+              textColor: palette.text,
+            }
+          : {}),
         display: "block",
         extendedProps: {
           description: quiz.description,
@@ -84,7 +91,6 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950/30 to-slate-950 p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
         <div>
           <h1 className="text-4xl font-bold text-white">Calendar</h1>
           <p className="text-slate-400 mt-1 text-base">
@@ -92,7 +98,6 @@ export default function CalendarPage() {
           </p>
         </div>
 
-        {/* Calendar */}
         <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-4 md:p-6 shadow-xl">
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -128,14 +133,21 @@ export default function CalendarPage() {
                   <div className="font-medium text-white line-clamp-2 break-words">
                     {title}
                   </div>
-                  <div className="mt-1 text-[10px] uppercase tracking-widest text-slate-300">
-                    {statusLabel}
-                  </div>
+                  {isStudent && (
+                    <div className="mt-1 text-[10px] uppercase tracking-widest text-slate-300">
+                      {statusLabel}
+                    </div>
+                  )}
                 </div>
               );
             }}
             eventClick={(info) => {
               const quizId = info.event.id;
+              const courseId = (info.event.extendedProps as any)?.courseId;
+              if (!isStudent && courseId) {
+                navigate(`/courses/${courseId}`);
+                return;
+              }
               if (quizId) {
                 navigate(`/quizview/${quizId}`);
               } else {
@@ -144,23 +156,27 @@ export default function CalendarPage() {
                 );
               }
             }}
-            eventClassNames={(arg) => [
-              (arg.event.extendedProps as any)?.status === "completed"
-                ? "fc-event-completed"
-                : (arg.event.extendedProps as any)?.status === "missed"
-                ? "fc-event-missed"
-                : "fc-event-pending",
-            ]}
+            eventClassNames={(arg) =>
+              isStudent
+                ? [
+                    (arg.event.extendedProps as any)?.status === "completed"
+                      ? "fc-event-completed"
+                      : (arg.event.extendedProps as any)?.status === "missed"
+                      ? "fc-event-missed"
+                      : "fc-event-pending",
+                  ]
+                : []
+            }
             height="auto"
             contentHeight="auto"
             aspectRatio={1.9}
             editable={false}
             selectable={false}
-            dayMaxEvents={3}
+            dayMaxEvents={1}
+            moreLinkClassNames="text-white hover:text-white"
           />
         </div>
 
-        {/* Upcoming Events - Compact List */}
         <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-5 md:p-7 shadow-xl">
           <h2 className="text-xl font-semibold text-white mb-5">Upcoming Quizzes</h2>
 
@@ -174,7 +190,6 @@ export default function CalendarPage() {
                     quiz.has_attempted ? "hover:bg-slate-900" : ""
                   }`}
                 >
-                  {/* Date */}
                   <div className="sm:w-28 flex-shrink-0 text-sm">
                     <div className="font-medium text-slate-300">
                       {new Date(quiz.due_date!).toLocaleDateString(undefined, {
@@ -191,7 +206,6 @@ export default function CalendarPage() {
                     </div>
                   </div>
 
-                  {/* Title + Description */}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-white group-hover:text-amber-300 transition-colors text-base">
                       {quiz.title}
@@ -203,7 +217,6 @@ export default function CalendarPage() {
                     )}
                   </div>
 
-                  {/* Quiz Badge */}
                   <div className="text-[10px] uppercase tracking-widest font-medium px-3 py-1 rounded-md self-start sm:self-center">
                     {quiz.has_attempted ? (
                       <span className="text-emerald-400 bg-emerald-400/10">COMPLETED</span>

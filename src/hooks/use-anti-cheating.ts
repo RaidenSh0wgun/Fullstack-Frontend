@@ -40,7 +40,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
   }, [timeLeft]);
 
   const reportCheating = useCallback(async (type: 'tab_switch' | 'copy_paste' | 'screenshot') => {
-    console.log(`🚨 CHEATING DETECTED: ${type}`, {
+    console.log(`CHEATING DETECTED: ${type}`, {
       quizId,
       timeLeft,
       timestamp: new Date().toISOString(),
@@ -50,7 +50,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
     onCheatingDetected?.(type);
 
     if (autoSubmitOnCheat && onAutoSubmit && type === 'screenshot') {
-      console.log('🚨 AUTO-SUBMITTING QUIZ DUE TO SERIOUS CHEATING (SCREENSHOT)');
+      console.log("AUTO-SUBMITTING QUIZ DUE TO SERIOUS CHEATING (SCREENSHOT)");
       onAutoSubmit();
     }
   }, [onCheatingDetected, onAutoSubmit, autoSubmitOnCheat, quizId, timeLeft, getCheatingDelay]);
@@ -187,7 +187,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       });
 
       if (e.key === 'PrintScreen' || e.keyCode === 44) {
-        console.log('🚨 PRINT SCREEN DETECTED');
+        console.log("PRINT SCREEN DETECTED");
         e.preventDefault();
         e.stopPropagation();
         reportCheating('screenshot');
@@ -200,7 +200,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       }
 
       if (e.altKey && (e.key === 'PrintScreen' || e.keyCode === 44)) {
-        console.log('🚨 ALT + PRINT SCREEN DETECTED');
+        console.log("ALT + PRINT SCREEN DETECTED");
         e.preventDefault();
         e.stopPropagation();
         reportCheating('screenshot');
@@ -213,7 +213,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       }
 
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key.toLowerCase() === 's' || e.keyCode === 83)) {
-        console.log('🚨 WIN + SHIFT + S DETECTED');
+        console.log("WIN + SHIFT + S DETECTED");
         e.preventDefault();
         e.stopPropagation();
         reportCheating('screenshot');
@@ -226,7 +226,7 @@ export function useAntiCheating(options: AntiCheatingOptions = {}) {
       }
 
       if ((e.ctrlKey || e.metaKey) && (e.key === 'PrintScreen' || e.keyCode === 44)) {
-        console.log('🚨 WIN + PRINT SCREEN DETECTED');
+        console.log("WIN + PRINT SCREEN DETECTED");
         e.preventDefault();
         e.stopPropagation();
         reportCheating('screenshot');

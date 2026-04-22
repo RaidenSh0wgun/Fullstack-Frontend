@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { requestPasswordReset } from "@/services/api";
+import { KeyRound } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -26,9 +27,7 @@ export default function ForgotPasswordPage() {
           const data = JSON.parse((err as { message: string }).message);
           if (data.error) message = data.error;
           if (data.detail) message = data.detail;
-        } catch {
-          // ignore parse error
-        }
+        } catch {}
       }
 
       setError(message);
@@ -75,7 +74,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-slate-900/95 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-red-500/20">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 w-12 h-12 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-            <span className="text-2xl">🔑</span>
+            <KeyRound className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent leading-tight">
             FORGOT PASSWORD?

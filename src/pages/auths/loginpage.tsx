@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
+import { Clock3, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const { login, register } = useAuth();
@@ -57,12 +57,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-red-950/20 to-slate-950 flex items-center justify-center p-4 sm:p-6">
-      {/* Slightly wider: max-w-md (448px) - perfect balance */}
       <div className="w-full max-w-md rounded-2xl border border-red-500/30 bg-slate-900/95 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-red-500/20">
-        {/* Compact header */}
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 w-12 h-12 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-            <span className="text-2xl">🕒</span>
+            <Clock3 className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent leading-tight">
             QUIZ TIME
@@ -79,7 +77,6 @@ export default function LoginPage() {
             : "Create an account."}
         </p>
 
-        {/* Compact mode toggle */}
         <div className="mb-5 flex gap-1.5 sm:gap-2 rounded-xl bg-slate-800/50 p-0.5 sm:p-1 border border-red-500/20">
           <button
             type="button"

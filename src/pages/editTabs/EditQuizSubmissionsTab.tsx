@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchQuizAttempts } from "@/services/api";
 import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 
 export default function EditQuizSubmissionsTab() {
   const { courseId, quizId } = useParams<{ courseId: string; quizId: string }>();
@@ -78,7 +79,7 @@ export default function EditQuizSubmissionsTab() {
       ) : (
         <div className="text-center py-20">
           <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-3xl flex items-center justify-center">
-            <span className="text-4xl opacity-50">📝</span>
+            <FileText className="h-9 w-9 opacity-50 text-slate-200" />
           </div>
           <h3 className="text-xl font-semibold text-slate-300">No submissions yet</h3>
           <p className="text-slate-400 mt-2">Students haven&apos;t taken this quiz yet.</p>

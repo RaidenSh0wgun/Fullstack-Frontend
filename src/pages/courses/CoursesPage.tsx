@@ -24,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { BookOpen, BookOpenText, Clock3, Plus } from "lucide-react";
 
 export default function CoursesPage() {
   const { user } = useAuth();
@@ -109,7 +110,7 @@ export default function CoursesPage() {
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-2xl animate-spin flex items-center justify-center">
-            <span className="text-2xl">🕒</span>
+              <Clock3 className="h-5 w-5 text-white" />
           </div>
           <p className="text-slate-400 text-lg">Loading courses...</p>
         </div>
@@ -122,7 +123,7 @@ export default function CoursesPage() {
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center mb-12">
           <div className="mx-auto mb-6 w-20 h-20 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-red-500/30">
-            <span className="text-3xl">📚</span>
+            <BookOpen className="h-9 w-9 text-white" />
           </div>
           <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent leading-tight">
             COURSES
@@ -180,7 +181,7 @@ export default function CoursesPage() {
               <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md rounded-3xl">
                 <DialogHeader className="p-8 pb-6">
                   <div className="w-14 h-14 bg-gradient-to-br from-red-500 via-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">➕</span>
+                    <Plus className="h-6 w-6 text-white" />
                   </div>
                   <DialogTitle className="text-2xl font-black text-center bg-gradient-to-r from-red-400 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
                     Create New Course
@@ -250,7 +251,7 @@ export default function CoursesPage() {
                   )}
 
                   <div className="w-14 h-14 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
-                    <span className="text-3xl">📖</span>
+                    <BookOpenText className="h-8 w-8 text-slate-100" />
                   </div>
 
                   <h2 className="text-2xl font-black text-white mb-4">
@@ -342,7 +343,7 @@ export default function CoursesPage() {
         ) : (
           <div className="text-center py-24">
             <div className="w-24 h-24 mx-auto mb-8 bg-gradient-to-br from-red-500/20 via-yellow-400/10 to-orange-500/20 rounded-3xl flex items-center justify-center border-2 border-dashed border-slate-700">
-              <span className="text-5xl opacity-40">📚</span>
+              <BookOpen className="h-11 w-11 opacity-50 text-slate-200" />
             </div>
             <h2 className="text-2xl font-bold text-slate-400 mb-4">No courses yet</h2>
             <p className="text-slate-500 max-w-md mx-auto">

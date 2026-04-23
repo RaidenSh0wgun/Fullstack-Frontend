@@ -237,9 +237,12 @@ function InstructorDashboard() {
             )}
 
             <Link to="/calendar">
-              <Button variant="outline" className="w-full h-12 border-slate-600 text-slate-300 hover:bg-slate-800 rounded-2xl">
-                OPEN CALENDAR
-              </Button>
+              <Button
+           variant="outline"
+           className="w-full h-12 border-slate-600 text-black hover:bg-slate-800 hover:text-white rounded-2xl"
+          >
+           OPEN CALENDAR
+</Button>
             </Link>
           </div>
         </div>
